@@ -64,10 +64,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AutoHypeOwinExtensions.cs" />
+    <Compile Include="OwinExtensions.cs" />
     <Compile Include="HyperMapperSettings.cs" />
+    <Compile Include="ModelBinder.cs" />
+    <Compile Include="OwinInitializers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="QueryStringHelper.cs" />
+    <Compile Include="ResponseWriter.cs" />
     <Compile Include="SampleTemplate.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

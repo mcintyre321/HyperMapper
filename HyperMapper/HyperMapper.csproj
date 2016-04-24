@@ -35,27 +35,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
-    <Compile Include="ExposeAttribute.cs" />
-    <Compile Include="InjectAttribute.cs" />
-    <Compile Include="INode.cs" />
+    <Compile Include="DomainMapping\ActionResults\OK.cs" />
+    <Compile Include="DomainMapping\ExposeAttribute.cs" />
+    <Compile Include="DomainMapping\InjectAttribute.cs" />
+    <Compile Include="DomainMapping\INode.cs" />
     <Compile Include="Key.cs" />
-    <Compile Include="Models\Action.cs" />
-    <Compile Include="Models\ActionField.cs" />
-    <Compile Include="Models\Entity.cs" />
-    <Compile Include="Models\Link.cs" />
+    <Compile Include="HypermediaModel\Action.cs" />
+    <Compile Include="HypermediaModel\ActionField.cs" />
+    <Compile Include="HypermediaModel\Entity.cs" />
+    <Compile Include="HypermediaModel\Link.cs" />
     <Compile Include="SubEntityRef.cs" />
-    <Compile Include="Node.cs" />
-    <Compile Include="HyperMapperAttribute.cs" />
+    <Compile Include="DomainMapping\Node.cs" />
+    <Compile Include="DomainMapping\HyperMapperAttribute.cs" />
     <Compile Include="AppendExtension.cs" />
     <Compile Include="Rel.cs" />
-    <Compile Include="RelAttribute.cs" />
+    <Compile Include="DomainMapping\RelAttribute.cs" />
     <Compile Include="RequestHandling\IWalkable.cs" />
     <Compile Include="RequestHandling\PocoToHypermediaEntityMapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RecurseExtension.cs" />
+    <Compile Include="Helpers\RecurseExtension.cs" />
     <Compile Include="RequestHandling\RequestHandler.cs" />
-    <Compile Include="RootNode.cs" />
-    <Compile Include="UserException.cs" />
+    <Compile Include="DomainMapping\RootNode.cs" />
+    <Compile Include="DomainMapping\ActionResults\UserError.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

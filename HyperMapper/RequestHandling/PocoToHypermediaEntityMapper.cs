@@ -28,7 +28,7 @@ namespace HyperMapper.RequestHandling
             foreach (var x in markedUpProperties)
             {
                 var propertyInfo = x.propertyInfo;
-                var propertyUri = new Uri(uri.ToString() + "/" + propertyInfo.Name, UriKind.Relative);
+                var propertyUri = new Uri((uri + "/" + propertyInfo.Name).TrimStart('/'), UriKind.Relative);
 
                 if (propertyInfo.PropertyType == typeof (string))
                 {
@@ -39,7 +39,7 @@ namespace HyperMapper.RequestHandling
                     properties.Add(propertyInfo.Name, new SubEntityRef()
                     {
                         Rels = x.propertyInfo.GetCustomAttributes<RelAttribute>().Select(ra => new Rel(ra.RelString)).Append(new Rel("down")),
-                        Uri = new Uri(uri.ToString() +  "/" + x.propertyInfo.Name, UriKind.Relative),
+                        Uri = new Uri((uri +  "/" + x.propertyInfo.Name).Trim('/'), UriKind.Relative),
                         Title = x.propertyInfo.Name,
                         Classes = GetClasses(propertyInfo.PropertyType.GetTypeInfo()),
                         FetchEntity = () =>
@@ -52,7 +52,7 @@ namespace HyperMapper.RequestHandling
             }
             foreach (var methodInfo in type.DeclaredMethods.Where(x => x.GetCustomAttributes<ExposeAttribute>().Any()))
             {
-                var methodUri = new Uri(uri.ToString() + "/" + methodInfo.Name, UriKind.Relative);
+                var methodUri = new Uri((uri.ToString() + "/" + methodInfo.Name).Trim('/'), UriKind.Relative);
                 var methodAction = this.BuildFromMethodInfo(node, methodUri, methodInfo, serviceLocator);
                 properties.Add(methodInfo.Name, methodAction);
             }

@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using HyperMapper;
+using HyperMapper.DomainMapping;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 
 namespace HyperMapper.Examples.TaskList.Domain
@@ -20,11 +22,12 @@ namespace HyperMapper.Examples.TaskList.Domain
         }
 
         [Expose]
-        public void SignIn(string username, [Inject] CurrentUserSetter currentUserSetter)
+        public OneOf.OneOf<OK, UserError> SignIn(string username, [Inject] CurrentUserSetter currentUserSetter)
         {
             var user = _users.SingleOrDefault(x => x.Username == username);
-            if (user == null) throw new UserException("username not found");
+            if (user == null) return new UserError("username not found");
             currentUserSetter(user.Key.ToString());
+            return new OK();
         }
     }
 }

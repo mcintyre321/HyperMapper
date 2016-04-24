@@ -28,18 +28,13 @@ namespace HyperMapper.Examples.TaskList.OwinApp
 
             var hyperMapperSettings = new HyperMapperSettings()
             {
-                BasePath = "/tasks",
+                BasePath = "/",
                 ServiceLocator = type => LocateAdaptors(type)
             };
 
-            obj.UseHypermedia(GetApplicationRootNode(), hyperMapperSettings);
+            obj.UseHypermedia(() => AppRoot, hyperMapperSettings);
 
             Process.Start("IExplore.exe", "http://localhost:12345");
-        }
-
-        private static Func<INode> GetApplicationRootNode()
-        {
-            return () => AppRoot;
         }
 
         /// <summary>

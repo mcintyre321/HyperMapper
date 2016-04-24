@@ -1,11 +1,9 @@
-using System;
-
-namespace HyperMapper
+namespace HyperMapper.DomainMapping
 {
-    public class UserException : Exception
+    public class UserError  
     {
         public string MessageForUser { get; private set; }
-        public UserException(string messageForUser)
+        public UserError(string messageForUser)
         {
             this.MessageForUser = messageForUser;
         }

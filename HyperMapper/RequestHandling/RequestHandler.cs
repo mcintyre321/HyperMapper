@@ -15,7 +15,7 @@ namespace HyperMapper.RequestHandling
     {
         public delegate Task<Tuple<Key, object>[]> ModelBinder(Tuple<Key, Type>[] argumentDesc);
 
-        public static async Task<Entity> Handle(Func<INode> getRootNode, string basePath, bool isInvoke, Func<Type, object> serviceLocator, Uri requestUri, ModelBinder bind)
+        public static async Task<Entity> Handle(Func<Entity> getRootNode, string basePath, bool isInvoke, Func<Type, object> serviceLocator, Uri requestUri, ModelBinder bind)
         {
             var rootNode = getRootNode();
             var separator = new [] { '/'};
@@ -24,9 +24,7 @@ namespace HyperMapper.RequestHandling
                 .Substring(basePath.Length)
                 .Split(separator, StringSplitOptions.RemoveEmptyEntries);
 
-            var entityMapper = new PocoToHypermediaEntityMapper();
-            var rootEntity = entityMapper.Map(new Uri(basePath, UriKind.Relative), rootNode, serviceLocator);
-            IWalkable target = rootEntity;
+            IWalkable target = rootNode;
             IWalkable prev = null;
             foreach (var requestUriPart in requestUriParts)
             {
