@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using HyperMapper.Models;
+using HyperMapper.HyperModel;
 using HyperMapper.Siren;
 using Microsoft.Owin;
 using Newtonsoft.Json;

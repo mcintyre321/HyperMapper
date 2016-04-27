@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using HyperMapper.RequestHandling;
 
-namespace HyperMapper.Models
+namespace HyperMapper.HyperModel
 {
     public class Action : IWalkable
     {

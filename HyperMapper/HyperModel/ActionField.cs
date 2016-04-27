@@ -1,4 +1,4 @@
-namespace HyperMapper.Models
+namespace HyperMapper.HyperModel
 {
     public class ActionField
     {

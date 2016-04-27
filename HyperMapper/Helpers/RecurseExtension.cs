@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace HyperMapper
+namespace HyperMapper.Helpers
 {
     public static class RecurseExtension
     {

@@ -1,9 +1,10 @@
 using System;
 using HyperMapper;
-using HyperMapper.Models;
+using HyperMapper.DomainMapping;
+using HyperMapper.HyperModel;
 using HyperMapper.RequestHandling;
 using Owin;
-using Action = HyperMapper.Models.Action;
+using Action = HyperMapper.HyperModel.Action;
 
 namespace HyperMapper.Owin
 {

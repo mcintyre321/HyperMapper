@@ -1,7 +1,7 @@
 ﻿
 using System;
 
-namespace HyperMapper
+namespace HyperMapper.DomainMapping
 {
     public class InjectAttribute : Attribute { }
 }

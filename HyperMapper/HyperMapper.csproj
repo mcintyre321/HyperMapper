@@ -40,10 +40,11 @@
     <Compile Include="DomainMapping\InjectAttribute.cs" />
     <Compile Include="DomainMapping\INode.cs" />
     <Compile Include="Key.cs" />
-    <Compile Include="HypermediaModel\Action.cs" />
-    <Compile Include="HypermediaModel\ActionField.cs" />
-    <Compile Include="HypermediaModel\Entity.cs" />
-    <Compile Include="HypermediaModel\Link.cs" />
+    <Compile Include="HyperModel\Action.cs" />
+    <Compile Include="HyperModel\ActionField.cs" />
+    <Compile Include="HyperModel\Entity.cs" />
+    <Compile Include="HyperModel\Link.cs" />
+    <Compile Include="HyperModel\Property.cs" />
     <Compile Include="SubEntityRef.cs" />
     <Compile Include="DomainMapping\Node.cs" />
     <Compile Include="DomainMapping\HyperMapperAttribute.cs" />

@@ -1,4 +1,5 @@
 using HyperMapper;
+using HyperMapper.DomainMapping;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {

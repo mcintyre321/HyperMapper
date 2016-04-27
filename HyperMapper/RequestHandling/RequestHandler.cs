@@ -4,10 +4,10 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using HyperMapper.Models;
+using HyperMapper.HyperModel;
 using Newtonsoft.Json.Linq;
 using OneOf;
-using Action = HyperMapper.Models.Action;
+using Action = HyperMapper.HyperModel.Action;
 
 namespace HyperMapper.RequestHandling
 {

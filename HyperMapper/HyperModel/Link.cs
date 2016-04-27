@@ -1,6 +1,6 @@
 using System;
 
-namespace HyperMapper.Models
+namespace HyperMapper.HyperModel
 {
     public class Link  
     {

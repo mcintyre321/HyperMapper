@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using HyperMapper;
 using HyperMapper.DomainMapping;
+using HyperMapper.DomainMapping.ActionResults;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 
 namespace HyperMapper.Examples.TaskList.Domain

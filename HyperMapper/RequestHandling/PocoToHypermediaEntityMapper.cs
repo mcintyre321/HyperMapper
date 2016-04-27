@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using HyperMapper.Models;
+using HyperMapper.DomainMapping;
+using HyperMapper.Helpers;
+using HyperMapper.HyperModel;
 using Newtonsoft.Json.Linq;
 using OneOf;
-using Action = HyperMapper.Models.Action;
+using Action = HyperMapper.HyperModel.Action;
 
 namespace HyperMapper.RequestHandling
 {
@@ -18,7 +20,7 @@ namespace HyperMapper.RequestHandling
 
             var classes = GetClasses(type);
 
-            Dictionary<Key, OneOf<SubEntityRef, Action, Link, JToken>> properties = new Dictionary<Key, OneOf<SubEntityRef, Action, Link, JToken>>();
+            List<OneOf<SubEntityRef, Action, Link, Property>> properties = new List<OneOf<SubEntityRef, Action, Link, Property>>();
             var markedUpProperties = type.DeclaredProperties.Select(propertyInfo => new
             {
                 propertyInfo,
@@ -32,12 +34,13 @@ namespace HyperMapper.RequestHandling
 
                 if (propertyInfo.PropertyType == typeof (string))
                 {
-                    properties.Add(propertyInfo.Name, JToken.FromObject(propertyInfo.GetValue(node)));
+                    properties.Add(new Property(propertyInfo.Name, JToken.FromObject(propertyInfo.GetValue(node))));
                 }
                 else
                 {
-                    properties.Add(propertyInfo.Name, new SubEntityRef()
+                    properties.Add(new SubEntityRef()
                     {
+                        Name = propertyInfo.Name,
                         Rels = x.propertyInfo.GetCustomAttributes<RelAttribute>().Select(ra => new Rel(ra.RelString)).Append(new Rel("down")),
                         Uri = new Uri((uri +  "/" + x.propertyInfo.Name).Trim('/'), UriKind.Relative),
                         Title = x.propertyInfo.Name,
@@ -54,10 +57,10 @@ namespace HyperMapper.RequestHandling
             {
                 var methodUri = new Uri((uri.ToString() + "/" + methodInfo.Name).Trim('/'), UriKind.Relative);
                 var methodAction = this.BuildFromMethodInfo(node, methodUri, methodInfo, serviceLocator);
-                properties.Add(methodInfo.Name, methodAction);
+                properties.Add(methodAction);
             }
             
-            var entity = new Entity(node.Key, uri, classes.ToArray(), properties);
+            var entity = new Entity(uri, classes.ToArray(), properties);
 
             return entity;
         }

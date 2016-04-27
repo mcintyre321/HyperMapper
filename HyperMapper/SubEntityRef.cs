@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using HyperMapper.Models;
+using HyperMapper.HyperModel;
 
 namespace HyperMapper
 {
@@ -11,5 +11,6 @@ namespace HyperMapper
         public Func<Entity> FetchEntity { get; set; }
         public IEnumerable<string> Classes { get; set; }
         public string Title { get; set; }
+        public string Name { get; set; }
     }
 }

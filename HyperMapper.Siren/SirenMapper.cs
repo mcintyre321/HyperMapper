@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using HyperMapper.Models;
 using Newtonsoft.Json.Linq;
 using OneOf;
 using SirenSharp;
 using Action = SirenSharp.Action;
-using Entity = HyperMapper.Models.Entity;
-using Link = HyperMapper.Models.Link;
+using Entity = HyperMapper.HyperModel.Entity;
+using Link = HyperMapper.HyperModel.Link;
 
 namespace HyperMapper.Siren
 {
@@ -27,24 +26,24 @@ namespace HyperMapper.Siren
             List<SirenSharp.Action> actions = new List<Action>();
             Dictionary<string, JToken> properties = new Dictionary<string, JToken>()
             {
-                {"key", resource.Key?.ToString() ?? "root"}
+                {"key", resource.Uri?.ToString()  ?? "root"}
             };
             foreach (var pair in resource.Children)
             {
-                pair.Value.Match(representation =>
+                pair.Match(representation =>
                 {
                     var item = MapSubEntityLink(representation);
                     subEntities.Add(item);
                 }, action =>
                 {
-                    var item = MapAction(pair, action);
+                    var item = MapAction(action);
                     actions.Add(item);
                 }, link =>
                 {
                     
-                }, jToken =>
+                }, property =>
                 {
-                    properties[pair.Key.ToString()] = jToken;
+                    properties[property.Name.ToString()] = property.Value;
                 });
                 entity.Actions = actions;
                 entity.Entities = subEntities;
@@ -64,9 +63,9 @@ namespace HyperMapper.Siren
             };
         }
 
-        private static Action MapAction(KeyValuePair<Key, OneOf<SubEntityRef, Models.Action, Link, JToken>> pair, HyperMapper.Models.Action action)
+        private static Action MapAction(HyperModel.Action action)
         {
-            var item = new Action(pair.Key.ToString(), action.Href)
+            var item = new Action(action.Key.ToString(), action.Href)
             {
                 Method = (HttpVerbs) Enum.Parse(typeof (HttpVerbs), action.Method, true),
                 Title = action.Title,
@@ -77,7 +76,7 @@ namespace HyperMapper.Siren
                     Type = FieldTypes.Text
                 }),
                 Href = action.Href,
-                Name = pair.Key.ToString(),
+                Name = action.Key.ToString(),
             };
             return item;
         }

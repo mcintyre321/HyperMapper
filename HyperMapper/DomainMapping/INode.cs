@@ -1,7 +1,6 @@
-using System;
 using System.Collections.Generic;
 
-namespace HyperMapper
+namespace HyperMapper.DomainMapping
 {
     public interface INode
     {

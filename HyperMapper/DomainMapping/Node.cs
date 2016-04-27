@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using HyperMapper.Helpers;
 
-namespace HyperMapper
+namespace HyperMapper.DomainMapping
 {
     /// <summary>
     /// This is an implementation of INode which contains code for adding and removing

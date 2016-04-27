@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HyperMapper.Models;
+using HyperMapper.HyperModel;
 using HyperMapper.RequestHandling;
 using Microsoft.Owin;
 
