@@ -5,7 +5,7 @@ using HyperMapper.RequestHandling;
 
 namespace HyperMapper.HyperModel
 {
-    public class Action : IWalkable
+    public class Action 
     {
         private readonly Func<Tuple<Key, object>[], System.Threading.Tasks.Task<object>> _invoke;
 
@@ -34,9 +34,6 @@ namespace HyperMapper.HyperModel
             return _invoke(args);
         }
 
-        public IWalkable Walk(Key key)
-        {
-            return null;
-        }
+        
     }
 }

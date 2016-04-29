@@ -35,29 +35,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
-    <Compile Include="DomainMapping\ActionResults\OK.cs" />
-    <Compile Include="DomainMapping\ExposeAttribute.cs" />
-    <Compile Include="DomainMapping\InjectAttribute.cs" />
-    <Compile Include="DomainMapping\INode.cs" />
+    <Compile Include="Mapping\ActionResults\OK.cs" />
+    <Compile Include="Mapping\ExposeAttribute.cs" />
+    <Compile Include="Mapping\InjectAttribute.cs" />
+    <Compile Include="Mapping\INode.cs" />
+    <Compile Include="Helpers\ForEachExtension.cs" />
     <Compile Include="Key.cs" />
     <Compile Include="HyperModel\Action.cs" />
     <Compile Include="HyperModel\ActionField.cs" />
     <Compile Include="HyperModel\Entity.cs" />
     <Compile Include="HyperModel\Link.cs" />
     <Compile Include="HyperModel\Property.cs" />
-    <Compile Include="SubEntityRef.cs" />
-    <Compile Include="DomainMapping\Node.cs" />
-    <Compile Include="DomainMapping\HyperMapperAttribute.cs" />
+    <Compile Include="HyperModel\SubEntityRef.cs" />
+    <Compile Include="Mapping\Node.cs" />
+    <Compile Include="Mapping\HyperMapperAttribute.cs" />
     <Compile Include="AppendExtension.cs" />
     <Compile Include="Rel.cs" />
-    <Compile Include="DomainMapping\RelAttribute.cs" />
-    <Compile Include="RequestHandling\IWalkable.cs" />
-    <Compile Include="RequestHandling\PocoToHypermediaEntityMapper.cs" />
+    <Compile Include="Mapping\RelAttribute.cs" />
+    <Compile Include="RequestHandling\RequestHandlerBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\RecurseExtension.cs" />
-    <Compile Include="RequestHandling\RequestHandler.cs" />
-    <Compile Include="DomainMapping\RootNode.cs" />
-    <Compile Include="DomainMapping\ActionResults\UserError.cs" />
+    <Compile Include="Mapping\RootNode.cs" />
+    <Compile Include="Mapping\ActionResults\UserError.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

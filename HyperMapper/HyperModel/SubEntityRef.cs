@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
-using HyperMapper.HyperModel;
 
-namespace HyperMapper
+namespace HyperMapper.HyperModel
 {
     public class SubEntityRef  
     {

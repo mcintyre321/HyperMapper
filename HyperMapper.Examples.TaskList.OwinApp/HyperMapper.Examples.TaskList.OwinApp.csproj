@@ -99,9 +99,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HyperMapper.Examples.TaskList.Domain\HyperMapper.Examples.TaskList.Domain.csproj">
+    <ProjectReference Include="..\HyperMapper.Examples.TaskList.ResourceModel\HyperMapper.Examples.TaskList.ResourceModel.csproj">
       <Project>{24743e70-7a8c-4d91-8ec5-e2c5da4685b6}</Project>
-      <Name>HyperMapper.Examples.TaskList.Domain</Name>
+      <Name>HyperMapper.Examples.TaskList.ResourceModel</Name>
     </ProjectReference>
     <ProjectReference Include="..\HyperMapper.Owin\HyperMapper.Owin.csproj">
       <Project>{5ac0cff9-6d73-42cf-a8ac-cc087fe9f322}</Project>

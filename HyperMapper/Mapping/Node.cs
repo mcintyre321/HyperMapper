@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HyperMapper.Helpers;
 
-namespace HyperMapper.DomainMapping
+namespace HyperMapper.Mapping
 {
     /// <summary>
     /// This is an implementation of INode which contains code for adding and removing

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HyperMapper.HyperModel;
 using Newtonsoft.Json.Linq;
 using OneOf;
 using SirenSharp;
@@ -30,9 +31,13 @@ namespace HyperMapper.Siren
             };
             foreach (var pair in resource.Children)
             {
-                pair.Match(representation =>
+                pair.Match(subEntity =>
                 {
-                    var item = MapSubEntityLink(representation);
+                    subEntities.Add(BuildSubEntityFromHypermedia(subEntity));
+                },
+                subEntityRef =>
+                {
+                    var item = MapSubEntityLink(subEntityRef);
                     subEntities.Add(item);
                 }, action =>
                 {
@@ -41,6 +46,50 @@ namespace HyperMapper.Siren
                 }, link =>
                 {
                     
+                }, property =>
+                {
+                    properties[property.Name.ToString()] = property.Value;
+                });
+                entity.Actions = actions;
+                entity.Entities = subEntities;
+                entity.Properties = properties;
+            }
+            return entity;
+        }
+
+        private SirenSharp.SubEntity BuildSubEntityFromHypermedia(Entity subEntity)
+        {
+            var entity = new SirenSharp.SubEntity
+            {
+                Class = subEntity.Class,
+                Links = new List<SirenSharp.Link>()
+                {
+                    new SirenSharp.Link(subEntity.Uri, "self")
+                }
+            };
+            List<OneOf<SubEntity, SubEntityLink>> subEntities = new List<OneOf<SubEntity, SubEntityLink>>();
+            List<SirenSharp.Action> actions = new List<Action>();
+            Dictionary<string, JToken> properties = new Dictionary<string, JToken>()
+            {
+                {"key", subEntity.Uri?.ToString()  ?? "root"}
+            };
+            foreach (var pair in subEntity.Children)
+            {
+                pair.Match(se =>
+                {
+                    subEntities.Add(BuildSubEntityFromHypermedia(se));
+                },
+                subEntityRef =>
+                {
+                    var item = MapSubEntityLink(subEntityRef);
+                    subEntities.Add(item);
+                }, action =>
+                {
+                    var item = MapAction(action);
+                    actions.Add(item);
+                }, link =>
+                {
+
                 }, property =>
                 {
                     properties[property.Name.ToString()] = property.Value;

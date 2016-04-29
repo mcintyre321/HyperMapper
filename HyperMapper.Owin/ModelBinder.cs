@@ -2,16 +2,18 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using HyperMapper.RequestHandling;
 using Microsoft.Owin;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using OneOf;
 using Owin;
 
 namespace HyperMapper.Owin
 {
     public static class ModelBinder
     {
-        public static async Task<Tuple<Key, object>[]> BindArgsFromRequest(Tuple<Key, Type>[] argumentDefs,
+        public static async Task<OneOf<ModelBindingFailed, BoundModel>> BindArgsFromRequest(Tuple<Key, Type>[] argumentDefs,
             IOwinRequest request)
         {
             switch (request.ContentType.Split(';')[0])
@@ -22,11 +24,12 @@ namespace HyperMapper.Owin
                     {
                         var rawBody = await sr.ReadToEndAsync();
                         var jObject = JObject.Parse(rawBody);
-                        return argumentDefs
+                        var tuples = argumentDefs
                             .Select(
                                 ai =>
-                                    Tuple.Create<Key, object>(ai.Item1, jObject[ai.Item1.ToString()]?.ToObject(ai.Item2)))
+                                    Tuple.Create(ai.Item1, jObject[ai.Item1.ToString()]?.ToObject(ai.Item2)))
                             .ToArray();
+                        return new BoundModel(tuples);
                     }
                 }
                 case "application/x-www-form-urlencoded":
@@ -35,9 +38,9 @@ namespace HyperMapper.Owin
                         var rawBody = await sr.ReadToEndAsync();
                         var dict = QueryStringHelper.QueryStringToDict(rawBody);
                         var jObject = JObject.Parse(JsonConvert.SerializeObject(dict));
-                        return argumentDefs
+                        return new BoundModel(argumentDefs
                             .Select(ai => Tuple.Create(ai.Item1, jObject[ai.Item1.ToString()]?.ToObject(ai.Item2)))
-                            .ToArray();
+                            .ToArray());
                     }
                     break;
             }

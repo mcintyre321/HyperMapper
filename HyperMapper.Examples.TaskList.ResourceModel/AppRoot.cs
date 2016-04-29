@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using HyperMapper.DomainMapping;
 using HyperMapper.Examples.TaskList.Domain.Ports;
+using HyperMapper.Mapping;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {
     public class AppRoot : RootNode
     {
         [Expose]
-        public Users Users { get; }
+        public Authentication Authentication { get; }
 
         [Expose]
         public Boards Boards { get; }
@@ -18,7 +18,7 @@ namespace HyperMapper.Examples.TaskList.Domain
 
         public AppRoot() 
         {
-            this.Users = AddChild(new Users(this, nameof(Users)));
+            this.Authentication = AddChild(new Authentication(this, nameof(Authentication)));
             this.Boards = AddChild(new Boards(this, nameof(Boards)));
         }
     }

@@ -11,7 +11,7 @@ namespace HyperMapper.Owin
     {
         public delegate Task AppFunc(IDictionary<string, object> env);
 
-        public static Func<AppFunc, AppFunc> UseHypermedia(HyperMapperSettings settings, Func<Entity> getRootNode)
+        public static Func<AppFunc, AppFunc> UseHypermedia(HyperMapperSettings settings, RequestHandler requestHandler)
         {
             return app => env =>
             {
@@ -19,27 +19,15 @@ namespace HyperMapper.Owin
                 if (!ctx.Request.Path.Value.StartsWith(settings.BasePath.ToString()))
                     return app(env);
 
-                return HandleRequest(settings, ctx, getRootNode);
+                return HandleRequest(settings, ctx, requestHandler);
             };
         }
 
 
-        private static async Task HandleRequest(HyperMapperSettings settings, OwinContext ctx, Func<Entity> fetchRootEntity)
+        private static async Task HandleRequest(HyperMapperSettings settings, OwinContext ctx, RequestHandler requestHandler)
         {
-            var requestUri = ctx.Request.Uri;
-            var isInvoke = ctx.Request.Method == "POST";
-
-            RequestHandler.ModelBinder bind = (argumentDesc) =>
-                ModelBinder.BindArgsFromRequest(argumentDesc, ctx.Request);
-
-            var hypermediaObject = await RequestHandler.Handle(
-                fetchRootEntity,
-                settings.BasePath,
-                isInvoke,
-                settings.ServiceLocator,
-                requestUri,
-                bind);
-
+            RequestHandling.ModelBinder modelBinder = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
+            var hypermediaObject = await requestHandler(ctx.Request.Uri, ctx.Request.Method == "POST", modelBinder);
             await ResponseWriter.Write(ctx, hypermediaObject, settings);
         }
     }

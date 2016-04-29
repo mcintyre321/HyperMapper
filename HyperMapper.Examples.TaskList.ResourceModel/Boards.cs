@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using HyperMapper;
-using HyperMapper.DomainMapping;
 using HyperMapper.Examples.TaskList.Domain.Ports;
+using HyperMapper.Mapping;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {

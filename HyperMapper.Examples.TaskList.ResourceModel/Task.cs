@@ -1,5 +1,5 @@
 using HyperMapper;
-using HyperMapper.DomainMapping;
+using HyperMapper.Mapping;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {

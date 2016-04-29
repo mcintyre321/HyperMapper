@@ -1,4 +1,4 @@
-namespace HyperMapper.DomainMapping.ActionResults
+namespace HyperMapper.Mapping.ActionResults
 {
     public class UserError  
     {
