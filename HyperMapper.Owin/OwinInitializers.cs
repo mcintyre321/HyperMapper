@@ -27,8 +27,8 @@ namespace HyperMapper.Owin
         private static async Task HandleRequest(HyperMapperSettings settings, OwinContext ctx, RequestHandler requestHandler)
         {
             RequestHandling.ModelBinder modelBinder = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
-            var hypermediaObject = await requestHandler(ctx.Request.Uri, ctx.Request.Method == "POST", modelBinder);
-            await ResponseWriter.Write(ctx, hypermediaObject, settings);
+            var response = await requestHandler(ctx.Request.Uri, ctx.Request.Method == "POST", modelBinder);
+            response.Switch(async e => await ResponseWriter.Write(ctx, e, settings));
         }
     }
 }

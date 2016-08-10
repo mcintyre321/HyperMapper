@@ -3,7 +3,6 @@ using HyperMapper;
 using HyperMapper.Mapping;
 using HyperMapper.RequestHandling;
 using Owin;
-using Action = HyperMapper.HyperModel.Action;
 
 namespace HyperMapper.Owin
 {

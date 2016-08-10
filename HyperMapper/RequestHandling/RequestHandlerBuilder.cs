@@ -8,10 +8,29 @@ using HyperMapper.HyperModel;
 using HyperMapper.Mapping;
 using Newtonsoft.Json.Linq;
 using OneOf;
-using Action = HyperMapper.HyperModel.Action;
 
 namespace HyperMapper.RequestHandling
 {
+    public class Response
+    {
+        private readonly object _value;
+        internal Response(Resource value) { _value = value; }
+
+        public T Match<T>(Func<Resource, T> matchEntity)
+        {
+            if (_value is Resource) return matchEntity((Resource)_value);
+            throw new InvalidOperationException();
+        }
+        public void Switch(Action<Resource> matchEntity)
+        {
+            if (_value is Resource) matchEntity((Resource)_value);
+            return;
+        }
+
+    }
+
+
+
     public class ModelBindingFailed { }
     public class BoundModel {
         public BoundModel(Tuple<Key, object>[] args)
@@ -22,7 +41,7 @@ namespace HyperMapper.RequestHandling
         public Tuple<Key, object>[] Args { get; }
     }
     public delegate Task<OneOf<ModelBindingFailed, BoundModel>> ModelBinder(Tuple<Key, Type>[] keys);
-    public delegate Task<Entity> RequestHandler(Uri uri, bool isPost, ModelBinder readBody);
+    public delegate Task<Response> RequestHandler(Uri uri, bool isPost, ModelBinder readBody);
 
     
     public class RequestHandlerBuilder
@@ -34,21 +53,24 @@ namespace HyperMapper.RequestHandling
                 var rootNode = getRootNode();
                 var requestUri = new Uri(requestAbsUri.PathAndQuery.ToString(), UriKind.Relative);
                 var root = GetResource(rootNode, baseUri, requestUri, serviceLocator);
-                
-                    
+
+                var parts = requestUri.ToString().Substring(baseUri.ToString().Length).Split('/')
+                    .Where(p => !String.IsNullOrEmpty(p));
+
+                var target = parts
+                    .Aggregate((OneOf<Resource, Operation, Resource.ChildNotFound>) root,   
+                        (x, part) => x.Match(
+                            childEntity => childEntity.GetChildByUriSegment(part),
+                            childAction => new Resource.ChildNotFound(),
+                            childNotFound => new Resource.ChildNotFound()
+                        )
+                    );
+
+
+              
                 if (isInvoke)
                 {
-                    OneOf<Entity, Action, Entity.ChildNotFound> target = root.AsT0;
-                    var parts = requestUri.ToString().Substring(baseUri.ToString().Length).Split('/');
-
-                    foreach (var part in parts.Where(p => !String.IsNullOrEmpty(p) ))
-                    {
-                        target = target.Match(
-                            childEntity => childEntity.GetChildByUriSegment(part),
-                            childAction => {throw new NotImplementedException("Actions don't have children");},
-                            childNotFound => { throw new NotImplementedException("Actions don't have children"); });
-                    }
-                    if (target.IsT0) throw new Exception("SHould have walked to an action..");
+                    if (target.IsT0) throw new Exception("SHould have walked to an Operation..");
 
                     var targetAction = target.AsT1;
                     var modelBindResult = await modelBinder(targetAction.ArgumentInfo);
@@ -57,27 +79,27 @@ namespace HyperMapper.RequestHandling
                         model => model);
                     var result = await targetAction.Invoke(args.Args);
 
-                    return MakeActionEntity(targetAction);
+                    return new Resource(MakeOperationEntity(targetAction));
                 }
 
-                return root.Match(entity => entity, MakeActionEntity);
+                return target.Match(resource => new Response(resource), new Response(MakeOperationEntity) );
             };
         }
 
-        private Entity MakeActionEntity(Action action)
+        private Resource MakeOperationEntity(Operation operation)
         {
-            return new Entity(action.Href, new string[0], new List<OneOf<Entity, SubEntityRef, Action, Link, Property>>()
+            return new Resource(operation.Href, new string[0], new List<OneOf<Operation, Link, Property>>()
             {
-                action
+                operation
             });
         }
 
 
-        private OneOf<Entity, Action> GetResource(INode node, Uri nodeUri, Uri requestUri,
+        private Resource GetResource(INode node, Uri nodeUri, Uri requestUri,
             Func<Type, object> serviceLocator)
         {
 
-            var properties = new List<OneOf<Entity, SubEntityRef, Action, Link, Property>>();
+            var properties = new List<OneOf<Operation, Link, Property>>();
             var type = node.GetType().GetTypeInfo();
 
             var markedUpProperties = type.DeclaredProperties.Select(propertyInfo => new
@@ -99,7 +121,11 @@ namespace HyperMapper.RequestHandling
                 .Select(x =>
                 {
                     var value = (INode) x.propertyInfo.GetValue(node);
-                    return GetResource(value, x.propertyUri, requestUri, serviceLocator).AsT0;
+                    return new Link(x.propertyInfo.Name, x.propertyInfo.GetCustomAttributes<RelAttribute>()
+                        .Select(ra => new Rel(ra.RelString)).ToArray(), x.propertyUri)
+                    {
+                        Follow = () => GetResource(value, x.propertyUri, requestUri, serviceLocator).AsT0
+                    };
                 }).ToArray().ForEach(ent => properties.Add(ent));
  
 
@@ -108,21 +134,14 @@ namespace HyperMapper.RequestHandling
                 .Where(x => !requestUri.ToString().StartsWith(x.propertyUri.ToString()))
                     .Select(x =>
                     {
-                        return new SubEntityRef()
-                        {
-                            Name = x.propertyInfo.Name,
-                            Rels =
-                                x.propertyInfo.GetCustomAttributes<RelAttribute>()
+                        return new Link(x.propertyInfo.Name,x.propertyInfo.GetCustomAttributes<RelAttribute>()
                                     .Select(ra => new Rel(ra.RelString))
-                                    .Append(new Rel("down")),
-                            Uri = (x.propertyUri),
-                            Title = x.propertyInfo.Name,
+                                    .Append(new Rel("down")).ToArray(), x.propertyUri
+                                    )
+                        {
+                           
                             Classes = GetClasses(x.propertyInfo.PropertyType.GetTypeInfo()),
-                            FetchEntity = () =>
-                            {
-                                var value = (INode) x.propertyInfo.GetValue(node);
-                                return GetResource(value, x.propertyUri, requestUri, serviceLocator).AsT0;
-                            }
+                             
                         };
                     }).ToArray().ForEach( p  => properties.Add(p));
             
@@ -137,21 +156,21 @@ namespace HyperMapper.RequestHandling
                 .ToArray().ForEach(a => properties.Add(a));
 
 
-            var entity = new Entity(nodeUri, GetClasses(type).ToArray(), properties.ToArray());
+            var entity = new Resource(nodeUri, GetClasses(type).ToArray(), properties.ToArray());
 
             return entity;
         }
 
-        private static List<string> GetClasses(TypeInfo type)
+        private static string[] GetClasses(TypeInfo type)
         {
             return type
                 .Recurse(t => t.BaseType.GetTypeInfo())
                 .TakeWhile(t => t.BaseType != null)
                 .Where(t => t.AsType() != typeof (object) && (t.GetCustomAttribute<HyperMapperAttribute>(false)?.UseTypeNameAsClassNameForEntity ?? true))
-                .Select(t => t.Name).ToList();
+                .Select(t => t.Name).ToArray();
         }
 
-        private Action BuildFromMethodInfo(object o, Uri uri, MethodInfo methodInfo, Func<Type, object> serviceLocator)
+        private Operation BuildFromMethodInfo(object o, Uri uri, MethodInfo methodInfo, Func<Type, object> serviceLocator)
         {
             var actionFields =
                 methodInfo.GetParameters()
@@ -200,7 +219,7 @@ namespace HyperMapper.RequestHandling
 
             
 
-            return new Action(methodInfo.Name, methodInfo.Name, "POST", uri, "application/json", actionFields.ToArray(), invoke, argumentInfo);
+            return new Operation(methodInfo.Name, methodInfo.Name, "POST", uri, "application/json", actionFields.ToArray(), invoke, argumentInfo);
         }
 
         private ActionField.FieldType BuildFromParameterInfo(ParameterInfo pi)

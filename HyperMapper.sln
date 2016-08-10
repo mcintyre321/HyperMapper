@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Siren", "HyperMapper.Siren\HyperMapper.Siren.csproj", "{8FA8A692-DECE-4444-894A-CE7D613801E8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Owin", "HyperMapper.Owin\HyperMapper.Owin.csproj", "{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}"
@@ -15,16 +13,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper", "Hypermapper\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Examples.TaskList.ResourceModel", "HyperMapper.Examples.TaskList.ResourceModel\HyperMapper.Examples.TaskList.ResourceModel.csproj", "{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Siren", "HyperMapper.Siren\HyperMapper.Siren.csproj", "{8FA8A692-DECE-4444-894A-CE7D613801E8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -41,6 +37,10 @@ Global
 		{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA8A692-DECE-4444-894A-CE7D613801E8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -4,31 +4,30 @@ using System.Linq;
 using HyperMapper.HyperModel;
 using Newtonsoft.Json.Linq;
 using OneOf;
-using SirenSharp;
-using Action = SirenSharp.Action;
-using Entity = HyperMapper.HyperModel.Entity;
+using SirenDotNet;
+using Action = SirenDotNet.Action;
 using Link = HyperMapper.HyperModel.Link;
 
 namespace HyperMapper.Siren
 {
     public class SirenMapper 
     {
-        public SirenSharp.Entity BuildFromHypermedia(Entity resource)
+        public SirenDotNet.Entity BuildFromHypermedia(Resource resource)
         {
-            var entity = new SirenSharp.Entity
+            var entity = new SirenDotNet.Entity
             {
                 Class = resource.Class,
-                Links = new List<SirenSharp.Link>()
+                Links = new List<SirenDotNet.Link>()
                 {
-                    new SirenSharp.Link(resource.Uri, "self")
+                    new SirenDotNet.Link(resource.Uri, "self")
                 }
             };
-            List<OneOf<SubEntity, SubEntityLink>> subEntities = new List<OneOf<SubEntity, SubEntityLink>>();
-            List<SirenSharp.Action> actions = new List<Action>();
-            Dictionary<string, JToken> properties = new Dictionary<string, JToken>()
-            {
-                {"key", resource.Uri?.ToString()  ?? "root"}
-            };
+            List<SubEntity> subEntities = new List<SubEntity>();
+            List<SirenDotNet.Action> actions = new List<Action>();
+            JObject properties = new JObject();
+            //{
+            //    {"key", resource.Uri?.ToString()  ?? "root"}
+            //};
             foreach (var pair in resource.Children)
             {
                 pair.Match(subEntity =>
@@ -57,75 +56,76 @@ namespace HyperMapper.Siren
             return entity;
         }
 
-        private SirenSharp.SubEntity BuildSubEntityFromHypermedia(Entity subEntity)
+        private SirenDotNet.SubEntity BuildSubEntityFromHypermedia(Resource subResource)
         {
-            var entity = new SirenSharp.SubEntity
+            var entity = new SirenDotNet.SubEntity.Embedded()
             {
-                Class = subEntity.Class,
-                Links = new List<SirenSharp.Link>()
+                Class = subResource.Class,
+                Links = new List<SirenDotNet.Link>()
                 {
-                    new SirenSharp.Link(subEntity.Uri, "self")
+                    new SirenDotNet.Link(subResource.Uri, "self")
                 }
             };
-            List<OneOf<SubEntity, SubEntityLink>> subEntities = new List<OneOf<SubEntity, SubEntityLink>>();
-            List<SirenSharp.Action> actions = new List<Action>();
-            Dictionary<string, JToken> properties = new Dictionary<string, JToken>()
+            List<SubEntity> subEntities = new List<SubEntity>();
+            List<SirenDotNet.Action> actions = new List<Action>();
+            List<SirenDotNet.Action> actions = new List<SirenDotNet.Link>();
+
+            var properties = new JObject();
+            //{
+            //    {"key", subResource.Uri?.ToString()  ?? "root"}
+            //};
+            foreach (var pair in subResource.Children)
             {
-                {"key", subEntity.Uri?.ToString()  ?? "root"}
-            };
-            foreach (var pair in subEntity.Children)
-            {
-                pair.Match(se =>
-                {
-                    subEntities.Add(BuildSubEntityFromHypermedia(se));
-                },
-                subEntityRef =>
-                {
-                    var item = MapSubEntityLink(subEntityRef);
-                    subEntities.Add(item);
-                }, action =>
+                pair.Match(action =>
                 {
                     var item = MapAction(action);
                     actions.Add(item);
                 }, link =>
                 {
+                    if (link.Follow != null)
+                    {
 
+                    }
+                    else
+                    {
+                        
+                    }
                 }, property =>
                 {
                     properties[property.Name.ToString()] = property.Value;
                 });
-                entity.Actions = actions;
-                entity.Entities = subEntities;
-                entity.Properties = properties;
+                entity.Actions = actions.Any() ?actions : null;
+                entity.Entities = subEntities.Any() ? subEntities : null;
+                entity.Properties = properties.HasValues ? properties : null;
             }
             return entity;
         }
 
-        private SirenSharp.SubEntityLink MapSubEntityLink(SubEntityRef representation)
+        private SirenDotNet.SubEntity.Linked MapSubEntityLink(Link representation)
         {
-                return new SirenSharp.SubEntityLink()
+            return new SubEntity.Linked()
             {
                 Rel = representation.Rels.Select(r => r.ToString()),
-                Title = representation.Title,
+                Title = representation.Text,
                 Class = representation.Classes,
                 Href = representation.Uri
             };
         }
 
-        private static Action MapAction(HyperModel.Action action)
+        private static Action MapAction(HyperModel.Operation operation)
         {
-            var item = new Action(action.Key.ToString(), action.Href)
+            var item = new Action(operation.Key.ToString(), operation.Href)
             {
-                Method = (HttpVerbs) Enum.Parse(typeof (HttpVerbs), action.Method, true),
-                Title = action.Title,
-                Type = action.ContentType,
-                Fields = action.Fields.Select(f => new Field(f.Key.ToString())
+                Method = (HttpVerbs) Enum.Parse(typeof (HttpVerbs), operation.Method, true),
+                Title = operation.Title,
+                Type = operation.ContentType,
+                Fields = operation.Fields.Select(f => new Field(f.Key.ToString())
                 {
                     Value = f.Value,
                     Type = FieldTypes.Text
                 }),
-                Href = action.Href,
-                Name = action.Key.ToString(),
+                Href = operation.Href,
+                Name = operation.Key.ToString(),
             };
             return item;
         }

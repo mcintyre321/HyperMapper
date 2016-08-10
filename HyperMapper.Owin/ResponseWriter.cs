@@ -11,7 +11,7 @@ namespace HyperMapper.Owin
 {
     internal static class ResponseWriter
     {
-        public static async Task Write(OwinContext ctx, Entity hypermediaObject, HyperMapperSettings settings)
+        public static async Task Write(OwinContext ctx, Resource hypermediaObject, HyperMapperSettings settings)
         {
             Func<string, string, Task> writeStringToResponse = async (contentType, body) =>
             {
