@@ -1,4 +1,4 @@
-using HyperMapper.HyperModel;
+using HyperMapper.Model;
 using OneOf;
 
 namespace HyperMapper.RequestHandling

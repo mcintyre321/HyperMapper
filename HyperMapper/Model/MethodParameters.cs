@@ -2,9 +2,9 @@ using System;
 
 namespace HyperMapper.RequestHandling
 {
-    public class BoundModel
+    public class MethodParameters
     {
-        public BoundModel(Tuple<Key, object>[] args)
+        public MethodParameters(Tuple<Key, object>[] args)
         {
             Args = args;
         }

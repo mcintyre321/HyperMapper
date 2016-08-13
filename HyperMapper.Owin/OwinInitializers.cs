@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HyperMapper.HyperModel;
+using HyperMapper.Model;
 using HyperMapper.RequestHandling;
 using Microsoft.Owin;
 
@@ -27,15 +27,15 @@ namespace HyperMapper.Owin
         private static async Task HandleRequest(HyperMapperSettings settings, OwinContext ctx, RequestHandler requestHandler)
         {
             RequestHandling.ModelBinder modelBinder = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
-            var request = new Request()
+            var request = new Request(Method.Parse(ctx.Request.Method), ctx.Request.Uri)
             {
-                Method = ctx.Request.Method,
-                Uri = ctx.Request.Uri
             };
             var response = await requestHandler(request, modelBinder);
             response.Switch(
                 methodNotAllowed => {},
-                notFoundResponse => {},
+                notFoundResponse =>
+                {
+                },
                 modelBindingFailedResponse => {}, 
                 async representationResponse =>
                 {

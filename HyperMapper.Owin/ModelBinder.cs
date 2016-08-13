@@ -13,10 +13,10 @@ namespace HyperMapper.Owin
 {
     public static class ModelBinder
     {
-        public static async Task<OneOf<ModelBindingFailed, BoundModel>> BindArgsFromRequest(Tuple<Key, Type>[] argumentDefs,
+        public static async Task<OneOf<ModelBindingFailed, MethodParameters>> BindArgsFromRequest(Tuple<Key, Type>[] argumentDefs,
             IOwinRequest request)
         {
-            if (argumentDefs.Length == 0) return new BoundModel(new Tuple<Key, object>[0]);
+            if (argumentDefs.Length == 0) return new MethodParameters(new Tuple<Key, object>[0]);
 
             switch (request.ContentType.Split(';')[0])
             {
@@ -31,7 +31,7 @@ namespace HyperMapper.Owin
                                 ai =>
                                     Tuple.Create(ai.Item1, jObject[ai.Item1.ToString()]?.ToObject(ai.Item2)))
                             .ToArray();
-                        return new BoundModel(tuples);
+                        return new MethodParameters(tuples);
                     }
                 }
                 case "application/x-www-form-urlencoded":
@@ -40,7 +40,7 @@ namespace HyperMapper.Owin
                         var rawBody = await sr.ReadToEndAsync();
                         var dict = QueryStringHelper.QueryStringToDict(rawBody);
                         var jObject = JObject.Parse(JsonConvert.SerializeObject(dict));
-                        return new BoundModel(argumentDefs
+                        return new MethodParameters(argumentDefs
                             .Select(ai => Tuple.Create(ai.Item1, jObject[ai.Item1.ToString()]?.ToObject(ai.Item2)))
                             .ToArray());
                     }

@@ -1,4 +1,7 @@
-namespace HyperMapper.HyperModel
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+
+namespace HyperMapper.Model
 {
     public class ActionField
     {
@@ -12,6 +15,7 @@ namespace HyperMapper.HyperModel
         public FieldType Type { get; private set; }
         public object Value { get; }
 
+        [JsonConverter(typeof(StringEnumConverter))]
         public enum FieldType
         {
             Text,

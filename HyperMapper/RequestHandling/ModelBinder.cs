@@ -4,5 +4,5 @@ using OneOf;
 
 namespace HyperMapper.RequestHandling
 {
-    public delegate Task<OneOf<ModelBindingFailed, BoundModel>> ModelBinder(Tuple<Key, Type>[] keys);
+    public delegate Task<OneOf<ModelBindingFailed, MethodParameters>> ModelBinder(Tuple<Key, Type>[] keys);
 }

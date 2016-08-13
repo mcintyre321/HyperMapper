@@ -25,16 +25,26 @@ class SirenAction extends React.Component {
     render() {
 
         return (
-            <form action={this.state.href} method={this.state.method || "POST"}  >
+            <form action={this.state.href} method={this.state.method || "POST"}>
                 {
-                    (this.state.fields || []).map(function(e) {
-                        return <SirenField key={e.name} {...e} />;
-                    })
+                (this.state.fields || []).map(function(e) {
+                return <SirenField key={e.name} {...e} />;
+                })
                 }
                 <input value={this.state.name} type="submit" />
             </form>
         );
 
+    }
+}
+class SirenLink extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = props;
+
+    }
+    render() {
+        return <a href={this.state.href}>{this.state.title || this.state.href}</a>;
     }
 }
 
@@ -64,16 +74,17 @@ class Siren extends React.Component {
                     }
                 })
             }
-            {
+                {
                 (state.actions || []).map(function(e) {
-                    return <SirenAction key={e.name || e.href} {...e} />;
+                return <SirenAction key={e.name || e.href} {...e} />;
+                })
+                }
+            {
+                (state.links || []).map(function(e) {
+                    return <div><SirenLink key={e.name || e.href} {...e} /></div>;
                 })
             } 
-            {(() => {
-                if (this.state.href) {
-                    return <a href={this.state.href}>{this.state.title || this.state.href}</a>;
-                }
-            })()}         
+
             </div>
         );
     }

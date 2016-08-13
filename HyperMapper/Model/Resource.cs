@@ -2,9 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using HyperMapper.RequestHandling;
 using OneOf;
 
-namespace HyperMapper.HyperModel
+namespace HyperMapper.Model
 {
     public class Resource
     {
@@ -32,7 +33,7 @@ namespace HyperMapper.HyperModel
         {
             foreach (var child in Children)
             {
-                if (child.Uri.ToString() == this.Uri.ToString().TrimEnd('/') + "/" + part)
+                if (child.Follow != null && child.Uri.ToString() == this.Uri.ToString().TrimEnd('/') + "/" + part)
                     return child.Follow();
             }
 
@@ -40,7 +41,7 @@ namespace HyperMapper.HyperModel
         }
 
 
-        public OneOf<MethodHandler, None> GetMethodHandler(string method)
+        public OneOf<MethodHandler, None> GetMethodHandler(Method method)
         {
             var handler = _methodHandlers.FirstOrDefault(m => m.Method == method);
             if (handler != null) return handler;

@@ -3,27 +3,25 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using HyperMapper.RequestHandling;
 
-namespace HyperMapper.HyperModel
+namespace HyperMapper.Model
 {
     public class MethodHandler
     {
         private readonly Func<IEnumerable<Tuple<Key, object>>, Task<InvokeResult>> _invoke;
 
-        public MethodHandler(string method, Tuple<Key, Type>[] argumentInfo, Func<IEnumerable<Tuple<Key, object>>, Task<InvokeResult>> invoke)
+        public MethodHandler(Method method, Tuple<Key, Type>[] parameters, Func<IEnumerable<Tuple<Key, object>>, Task<InvokeResult>> invoke)
         {
             _invoke = invoke;
             Method = method;
-            ArgumentInfo = argumentInfo;
+            Parameters = parameters;
         }
 
-        public Tuple<Key, Type>[] ArgumentInfo { get; }
-        public string Method { get; }
+        public Tuple<Key, Type>[] Parameters { get; }
+        public Method Method { get; }
 
-        public Task<InvokeResult> Invoke(BoundModel args)
+        public Task<InvokeResult> Invoke(MethodParameters args)
         {
             return _invoke(args.Args);
         }
-
-        
     }
 }

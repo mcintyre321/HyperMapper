@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HyperMapper.HyperModel;
+using HyperMapper.Model;
 using HyperMapper.Siren;
 using Microsoft.Owin;
 using Newtonsoft.Json;
@@ -11,7 +12,7 @@ namespace HyperMapper.Owin
 {
     internal static class ResponseWriter
     {
-        public static async Task Write(OwinContext ctx, Representation hypermediaObject, HyperMapperSettings settings)
+        public static async Task Write(OwinContext ctx, Representation representation, HyperMapperSettings settings)
         {
             Func<string, string, Task> writeStringToResponse = async (contentType, body) =>
             {
@@ -20,23 +21,41 @@ namespace HyperMapper.Owin
             };
 
             var accept = ctx.Request.Accept;
-            var responseEntity = new SirenMapper().BuildFromHypermedia(hypermediaObject);
-
-            var serializerSettings = settings.JsonSerializerSettings;
-
-            var serializer = JsonSerializer.Create(serializerSettings);
-            var objectAsJson = JToken.FromObject(responseEntity, serializer);
-
-            if (accept.Split(',').Contains("application/json"))
+            var representor = settings.Representors.FirstOrDefault(r => r.AcceptTypes.Contains(ctx.Request.Accept));
+            if (representor != null)
             {
-                await writeStringToResponse("application/json", objectAsJson.ToString(Formatting.Indented));
+                var response = representor.GetResponse(representation);
+                await writeStringToResponse(response.Item1, response.Item2);
             }
-            else if (accept.Split(',').Contains("text/html"))
+            else
             {
-                var index = new HyperMapper.Siren.Index() { Model = objectAsJson };
-                var transformText = index.TransformText();
-                await writeStringToResponse("text/html", transformText);
+                if (accept.Split(',').Contains("text/html"))
+                {
+                    var sirenRep = settings.Representors.OfType<SirenRepresentor>().Single();
+                    var response = sirenRep.GetResponse(representation);
+                    var index = new HyperMapper.Siren.Index() {Model = JToken.Parse(response.Item2)};
+                    var transformText = index.TransformText();
+                    await writeStringToResponse("text/html", transformText);
+                }
+                else
+                {
+                    throw new NotImplementedException();
+                }
             }
         }
     }
+
+    public class HyperMapperSettings
+    {
+        public IList<Representor> Representors = new List<Representor>()
+        {
+            new SirenRepresentor()
+        };
+
+        public string BasePath { get; set; }
+
+        public Func<Type, object> ServiceLocator { get; set; } = type => Activator.CreateInstance(type);
+    }
+
+    
 }

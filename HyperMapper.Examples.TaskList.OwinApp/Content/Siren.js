@@ -68,8 +68,32 @@ var SirenAction = (function (_React$Component2) {
     return SirenAction;
 })(React.Component);
 
-var Siren = (function (_React$Component3) {
-    _inherits(Siren, _React$Component3);
+var SirenLink = (function (_React$Component3) {
+    _inherits(SirenLink, _React$Component3);
+
+    function SirenLink(props) {
+        _classCallCheck(this, SirenLink);
+
+        _get(Object.getPrototypeOf(SirenLink.prototype), "constructor", this).call(this, props);
+        this.state = props;
+    }
+
+    _createClass(SirenLink, [{
+        key: "render",
+        value: function render() {
+            return React.createElement(
+                "a",
+                { href: this.state.href },
+                this.state.title || this.state.href
+            );
+        }
+    }]);
+
+    return SirenLink;
+})(React.Component);
+
+var Siren = (function (_React$Component4) {
+    _inherits(Siren, _React$Component4);
 
     function Siren(props) {
         _classCallCheck(this, Siren);
@@ -81,8 +105,6 @@ var Siren = (function (_React$Component3) {
     _createClass(Siren, [{
         key: "render",
         value: function render() {
-            var _this = this;
-
             var state = this.state;
             return React.createElement(
                 "div",
@@ -112,15 +134,13 @@ var Siren = (function (_React$Component3) {
                 (state.actions || []).map(function (e) {
                     return React.createElement(SirenAction, _extends({ key: e.name || e.href }, e));
                 }),
-                (function () {
-                    if (_this.state.href) {
-                        return React.createElement(
-                            "a",
-                            { href: _this.state.href },
-                            _this.state.title || _this.state.href
-                        );
-                    }
-                })()
+                (state.links || []).map(function (e) {
+                    return React.createElement(
+                        "div",
+                        null,
+                        React.createElement(SirenLink, _extends({ key: e.name || e.href }, e))
+                    );
+                })
             );
         }
     }]);
