@@ -27,8 +27,20 @@ namespace HyperMapper.Owin
         private static async Task HandleRequest(HyperMapperSettings settings, OwinContext ctx, RequestHandler requestHandler)
         {
             RequestHandling.ModelBinder modelBinder = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
-            var response = await requestHandler(ctx.Request.Uri, ctx.Request.Method == "POST", modelBinder);
-            response.Switch(async e => await ResponseWriter.Write(ctx, e, settings));
+            var request = new Request()
+            {
+                Method = ctx.Request.Method,
+                Uri = ctx.Request.Uri
+            };
+            var response = await requestHandler(request, modelBinder);
+            response.Switch(
+                methodNotAllowed => {},
+                notFoundResponse => {},
+                modelBindingFailedResponse => {}, 
+                async representationResponse =>
+                {
+                    await ResponseWriter.Write(ctx, representationResponse.Representation, settings);
+                });
         }
     }
 }

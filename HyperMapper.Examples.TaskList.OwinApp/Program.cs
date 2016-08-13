@@ -34,7 +34,7 @@ namespace HyperMapper.Examples.TaskList.OwinApp
 
             obj.UseHypermedia(() => AppRoot, hyperMapperSettings);
 
-            Process.Start("IExplore.exe", "http://localhost:12345");
+            Process.Start(@"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", "http://localhost:12345");
         }
 
         /// <summary>

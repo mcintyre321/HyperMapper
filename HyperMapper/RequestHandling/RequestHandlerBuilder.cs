@@ -11,173 +11,204 @@ using OneOf;
 
 namespace HyperMapper.RequestHandling
 {
-    public class Response
-    {
-        private readonly object _value;
-        internal Response(Resource value) { _value = value; }
-
-        public T Match<T>(Func<Resource, T> matchEntity)
-        {
-            if (_value is Resource) return matchEntity((Resource)_value);
-            throw new InvalidOperationException();
-        }
-        public void Switch(Action<Resource> matchEntity)
-        {
-            if (_value is Resource) matchEntity((Resource)_value);
-            return;
-        }
-
-    }
-
-
-
-    public class ModelBindingFailed { }
-    public class BoundModel {
-        public BoundModel(Tuple<Key, object>[] args)
-        {
-            Args = args;
-        }
-
-        public Tuple<Key, object>[] Args { get; }
-    }
-    public delegate Task<OneOf<ModelBindingFailed, BoundModel>> ModelBinder(Tuple<Key, Type>[] keys);
-    public delegate Task<Response> RequestHandler(Uri uri, bool isPost, ModelBinder readBody);
-
-    
     public class RequestHandlerBuilder
     {
         public RequestHandler MakeRequestHandler(Uri baseUri, Func<INode> getRootNode, Func<Type, object> serviceLocator)
         {
-            return async (requestAbsUri, isInvoke, modelBinder) =>
+            return async (request, modelBinder) =>
             {
                 var rootNode = getRootNode();
-                var requestUri = new Uri(requestAbsUri.PathAndQuery.ToString(), UriKind.Relative);
-                var root = GetResource(rootNode, baseUri, requestUri, serviceLocator);
+                var requestUri = new Uri(request.Uri.PathAndQuery.ToString(), UriKind.Relative);
+                var root = X.MakeResourceFromNode(rootNode, baseUri, requestUri, serviceLocator);
 
                 var parts = requestUri.ToString().Substring(baseUri.ToString().Length).Split('/')
                     .Where(p => !String.IsNullOrEmpty(p));
 
                 var target = parts
-                    .Aggregate((OneOf<Resource, Operation, Resource.ChildNotFound>) root,   
+                    .Aggregate((OneOf<Resource, None>) root,
                         (x, part) => x.Match(
                             childEntity => childEntity.GetChildByUriSegment(part),
-                            childAction => new Resource.ChildNotFound(),
-                            childNotFound => new Resource.ChildNotFound()
-                        )
+                            none => none)
                     );
 
+                return await target.Match(
+                    resource => resource.GetMethodHandler(request.Method)
+                        .Match(
+                            async handler =>
+                            {
 
-              
-                if (isInvoke)
-                {
-                    if (target.IsT0) throw new Exception("SHould have walked to an Operation..");
-
-                    var targetAction = target.AsT1;
-                    var modelBindResult = await modelBinder(targetAction.ArgumentInfo);
-                    var args = modelBindResult.Match(
-                        failed => { throw new NotImplementedException(); },
-                        model => model);
-                    var result = await targetAction.Invoke(args.Args);
-
-                    return new Resource(MakeOperationEntity(targetAction));
-                }
-
-                return target.Match(resource => new Response(resource), new Response(MakeOperationEntity) );
+                                var bindResult = await modelBinder(handler.ArgumentInfo);
+                                var response = await bindResult.Match<Task<Response>>(
+                                    failed => Task.FromResult<Response>(new Response.ModelBindingFailedResponse()),
+                                    async boundModel => (await handler.Invoke(boundModel)).Match(
+                                        representation =>
+                                            new Response.RepresentationResponse(representation.Representation)
+                                        ));
+                                return response;
+                            },
+                            none => Task.FromResult((Response) new Response.MethodNotAllowed())),
+                    none => Task.FromResult((Response) new Response.NotFoundResponse()));
             };
         }
-
-        private Resource MakeOperationEntity(Operation operation)
+    }
+    public class X
         {
-            return new Resource(operation.Href, new string[0], new List<OneOf<Operation, Link, Property>>()
-            {
-                operation
-            });
+
+   
+        public class MarkedUpProperty
+        {
+            public PropertyInfo propertyInfo { get; set; }
+            public ExposeAttribute att { get; set; }
+            public Uri propertyUri { get; set; }
         }
 
-
-        private Resource GetResource(INode node, Uri nodeUri, Uri requestUri,
+        public static Resource MakeResourceFromNode(INode node, Uri nodeUri, Uri requestUri,
             Func<Type, object> serviceLocator)
         {
 
-            var properties = new List<OneOf<Operation, Link, Property>>();
             var type = node.GetType().GetTypeInfo();
 
-            var markedUpProperties = type.DeclaredProperties.Select(propertyInfo => new
+            var linkedChildResources = LinkedChildResources(node, nodeUri, requestUri, serviceLocator, type);
+            var linkedOtherResources = LinkedOtherResources(nodeUri, requestUri, type);
+            var linkedActionResources = X.GetActions(type, nodeUri, node, serviceLocator);
+
+            var links = linkedChildResources
+                .Concat(linkedOtherResources)
+                .Concat(linkedActionResources);
+
+
+            var methodHandlers = new[]
             {
-                propertyInfo,
-                att = propertyInfo.GetCustomAttribute<ExposeAttribute>(),
-                propertyUri = new Uri((nodeUri.ToString().TrimEnd('/') + "/" + propertyInfo.Name), UriKind.Relative)
+                new MethodHandler("GET", new Tuple<Key, Type>[0], arguments =>
+                {
+                    var oneOfs = new List<OneOf<Link, Property>>();
+                    foreach (var link in links)
+                    {
+                        oneOfs.Add(link);
+                    }
 
-            }).Where(x => x.att != null)
-            .ToArray();
+                    var properties = MarkedUpProperties(nodeUri, type)
+                        .Where(IsSimpleProperty)
+                        .Select(x => new Property(x.propertyInfo.Name, JToken.FromObject(x.propertyInfo.GetValue(node))));
 
-            markedUpProperties.Where(x => x.propertyInfo.PropertyType == typeof (string))
-                .Select(x => new Property(x.propertyInfo.Name, JToken.FromObject(x.propertyInfo.GetValue(node))))
-                .ToArray().ForEach(p => properties.Add(p));
+                    foreach (var property in properties)
+                    {
+                        oneOfs.Add(property);
+                    }
 
-            markedUpProperties
-                .Where(x => x.propertyInfo.PropertyType != typeof (string))
-                .Where(x => requestUri.ToString().StartsWith(x.propertyUri.ToString()))
+                    var representation = new Representation(new string[0], nodeUri, oneOfs);
+                          
+                    return Task.FromResult<InvokeResult>(new InvokeResult.RepresentationResult(representation));
+                })
+            };
+
+
+
+            var entity = new Resource(nodeUri, GetClasses(type).ToArray(), links.ToArray(), methodHandlers.ToArray());
+
+            return entity;
+        }
+
+        private static IEnumerable<Link> LinkedOtherResources(Uri nodeUri, Uri requestUri, TypeInfo type)
+        {
+            var linkedOtherResources = MarkedUpProperties(nodeUri, type)
+                .Where(IsLinkedResource)
+                .Where(x => IsChildUri(requestUri, x))
+                .Select(x =>
+                {
+                    return new Link(x.propertyInfo.Name, x.propertyInfo.GetCustomAttributes<RelAttribute>()
+                        .Select(ra => new Rel(ra.RelString)).ToArray(), x.propertyUri
+                        )
+                    {
+                        //Classes = GetClasses(x.propertyInfo.PropertyType.GetTypeInfo()),
+                    };
+                });
+            return linkedOtherResources;
+        }
+
+        private static IEnumerable<Link> LinkedChildResources(INode node, Uri nodeUri, Uri requestUri, Func<Type, object> serviceLocator,
+            TypeInfo type)
+        {
+            var linkedChildResources = MarkedUpProperties(nodeUri, type)
+                .Where(IsLinkedResource)
+                .Where(x => !IsChildUri(requestUri, x))
                 .Select(x =>
                 {
                     var value = (INode) x.propertyInfo.GetValue(node);
                     return new Link(x.propertyInfo.Name, x.propertyInfo.GetCustomAttributes<RelAttribute>()
-                        .Select(ra => new Rel(ra.RelString)).ToArray(), x.propertyUri)
+                        .Select(ra => new Rel(ra.RelString))
+                        .Append(new Rel("down")).ToArray(), x.propertyUri)
                     {
-                        Follow = () => GetResource(value, x.propertyUri, requestUri, serviceLocator).AsT0
+                        Follow = () => MakeResourceFromNode(value, x.propertyUri, requestUri, serviceLocator)
                     };
-                }).ToArray().ForEach(ent => properties.Add(ent));
- 
+                });
+            return linkedChildResources;
+        }
 
-                markedUpProperties
-                .Where(x => x.propertyInfo.PropertyType != typeof (string))
-                .Where(x => !requestUri.ToString().StartsWith(x.propertyUri.ToString()))
-                    .Select(x =>
-                    {
-                        return new Link(x.propertyInfo.Name,x.propertyInfo.GetCustomAttributes<RelAttribute>()
-                                    .Select(ra => new Rel(ra.RelString))
-                                    .Append(new Rel("down")).ToArray(), x.propertyUri
-                                    )
-                        {
-                           
-                            Classes = GetClasses(x.propertyInfo.PropertyType.GetTypeInfo()),
-                             
-                        };
-                    }).ToArray().ForEach( p  => properties.Add(p));
-            
+        private static IEnumerable<MarkedUpProperty> MarkedUpProperties(Uri nodeUri, TypeInfo type)
+        {
+            var markedUp = type.DeclaredProperties
+                .Select(propertyInfo => new MarkedUpProperty
+                {
+                    propertyInfo = propertyInfo,
+                    att = propertyInfo.GetCustomAttribute<ExposeAttribute>(),
+                    propertyUri = new Uri((nodeUri.ToString().TrimEnd('/') + "/" + propertyInfo.Name), UriKind.Relative)
+                }).Where(x => x.att != null);
+            return markedUp;
+        }
 
-            type.DeclaredMethods.Where(x => x.GetCustomAttributes<ExposeAttribute>().Any())
+        private static bool IsSimpleProperty(MarkedUpProperty arg)
+        {
+            return arg.propertyInfo.PropertyType == typeof(string);
+        }
+
+        private static bool IsChildUri(Uri requestUri, MarkedUpProperty x)
+        {
+            return x.propertyUri.ToString().StartsWith(requestUri.ToString());
+        }
+
+        private static bool IsLinkedResource(MarkedUpProperty x)
+        {
+            return x.propertyInfo.PropertyType != typeof(string);
+        }
+
+         
+        static IEnumerable<Link> GetActions(TypeInfo type, Uri nodeUri, object node, Func<Type, object> serviceLocator)
+        {
+            return type.DeclaredMethods.Where(x => x.GetCustomAttributes<ExposeAttribute>().Any())
                 .Select(methodInfo => new
                 {
                     methodInfo,
                     methodUri = new Uri((nodeUri.ToString() + "/" + methodInfo.Name), UriKind.Relative)
                 })
-                .Select(pair => this.BuildFromMethodInfo(node, pair.methodUri, pair.methodInfo, serviceLocator))
-                .ToArray().ForEach(a => properties.Add(a));
-
-
-            var entity = new Resource(nodeUri, GetClasses(type).ToArray(), properties.ToArray());
-
-            return entity;
+                .Select(pair => new Link(
+                    pair.methodInfo.Name, 
+                    new Rel[]{ new Rel("action"), new Rel(pair.methodInfo.Name)}, 
+                    pair.methodUri)
+                {
+                    Follow = () => BuildFromMethodInfo(node, pair.methodUri, pair.methodInfo, serviceLocator)
+                });
         }
-
         private static string[] GetClasses(TypeInfo type)
         {
             return type
                 .Recurse(t => t.BaseType.GetTypeInfo())
                 .TakeWhile(t => t.BaseType != null)
-                .Where(t => t.AsType() != typeof (object) && (t.GetCustomAttribute<HyperMapperAttribute>(false)?.UseTypeNameAsClassNameForEntity ?? true))
+                .Where(
+                    t =>
+                        t.AsType() != typeof(object) &&
+                        (t.GetCustomAttribute<HyperMapperAttribute>(false)?.UseTypeNameAsClassNameForEntity ?? true))
                 .Select(t => t.Name).ToArray();
         }
 
-        private Operation BuildFromMethodInfo(object o, Uri uri, MethodInfo methodInfo, Func<Type, object> serviceLocator)
+        static Resource BuildFromMethodInfo(object o, Uri uri, MethodInfo methodInfo, Func<Type, object> serviceLocator)
         {
-            var actionFields =
-                methodInfo.GetParameters()
-                    .Where(pi => pi.GetCustomAttributes<InjectAttribute>().Any() == false)
-                    .Select(pi => new ActionField(pi.Name, BuildFromParameterInfo(pi)));
+            //var actionFields =
+            //    methodInfo.GetParameters()
+            //        .Where(pi => pi.GetCustomAttributes<InjectAttribute>().Any() == false)
+            //        .Select(pi => new ActionField(pi.Name, BuildFromParameterInfo(pi)));
 
-            Func<IEnumerable<Tuple<Key, object>>, Task<object>> invoke = async (submittedArgs) =>
+            Func<IEnumerable<Tuple<Key, object>>, Task<InvokeResult>> invoke = async (submittedArgs) =>
             {
                 var argsEnumerator = submittedArgs.GetEnumerator();
                 var argsList = methodInfo.GetParameters()
@@ -187,7 +218,8 @@ namespace HyperMapper.RequestHandling
                         {
                             if (serviceLocator == null)
                             {
-                                 throw new InvalidOperationException($"Cannot [Inject] parameter {pi.Name} for {methodInfo.DeclaringType.Name}.{methodInfo.Name} Please set ServiceLocator at startup");
+                                throw new InvalidOperationException(
+                                    $"Cannot [Inject] parameter {pi.Name} for {methodInfo.DeclaringType.Name}.{methodInfo.Name} Please set ServiceLocator at startup");
                             }
                             return serviceLocator(pi.ParameterType);
                         }
@@ -196,35 +228,36 @@ namespace HyperMapper.RequestHandling
                             argsEnumerator.MoveNext();
                             var current = argsEnumerator.Current;
                             if (current.Item1 != new Key(pi.Name))
-                                throw new ArgumentException("Mismatch: expected " + pi.Name + ", received" + current.Item1.ToString());
+                                throw new ArgumentException("Mismatch: expected " + pi.Name + ", received" +
+                                                            current.Item1.ToString());
                             return current.Item2;
                         }
                     });
 
                 var result = methodInfo.Invoke(o, argsList.ToArray());
-                if (methodInfo.ReturnType == typeof (void))
+                if (methodInfo.ReturnType == typeof(void))
                 {
-                    return Task.FromResult<object>(0);
                 }
                 if (result is Task)
                 {
                     await ((Task) result);
                 }
-                return Task.FromResult(result);
+                var representation = new Representation(new string[0], uri, new List<OneOf<Link, Property>>());
+                return new InvokeResult.RepresentationResult(representation);
             };
 
             Tuple<Key, Type>[] argumentInfo = methodInfo.GetParameters()
                 .Where(mi => mi.GetCustomAttribute<InjectAttribute>() == null)
                 .Select(pi => Tuple.Create((Key) pi.Name, pi.ParameterType)).ToArray();
 
-            
 
-            return new Operation(methodInfo.Name, methodInfo.Name, "POST", uri, "application/json", actionFields.ToArray(), invoke, argumentInfo);
-        }
+            var methodHandlers = new List<MethodHandler>();
 
-        private ActionField.FieldType BuildFromParameterInfo(ParameterInfo pi)
-        {
-            return ActionField.FieldType.Text;
+            var postHandler = new MethodHandler("POST", argumentInfo, invoke);
+            methodHandlers.Add(postHandler);
+            var resource = new Resource(uri, new string[0], new List<Link>(), methodHandlers);
+
+            return resource;
         }
-    }
+        }
 }

@@ -49,7 +49,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="OneOf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OneOf.1.0.16\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\OneOf.dll</HintPath>
+      <HintPath>..\packages\OneOf.2.0.21\lib\portable45-net45+win8+wp8+wpa81\OneOf.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="RazorGenerator.Templating, Version=2.0.0.0, Culture=neutral, PublicKeyToken=7b26dc2a43f6a0d4, processorArchitecture=MSIL">

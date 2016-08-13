@@ -35,6 +35,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
+    <Compile Include="HyperModel\InvokeResult.cs" />
+    <Compile Include="HyperModel\MethodHandler.cs" />
+    <Compile Include="HyperModel\None.cs" />
+    <Compile Include="HyperModel\ObjectResult.cs" />
+    <Compile Include="HyperModel\Representation.cs" />
     <Compile Include="Mapping\ActionResults\OK.cs" />
     <Compile Include="Mapping\ExposeAttribute.cs" />
     <Compile Include="Mapping\InjectAttribute.cs" />
@@ -51,11 +56,19 @@
     <Compile Include="AppendExtension.cs" />
     <Compile Include="Rel.cs" />
     <Compile Include="Mapping\RelAttribute.cs" />
+    <Compile Include="Rels.cs" />
+    <Compile Include="RequestHandling\BoundModel.cs" />
+    <Compile Include="RequestHandling\Method.cs" />
+    <Compile Include="RequestHandling\ModelBinder.cs" />
+    <Compile Include="RequestHandling\ModelBindingFailed.cs" />
+    <Compile Include="RequestHandling\Request.cs" />
+    <Compile Include="RequestHandling\RequestHandler.cs" />
     <Compile Include="RequestHandling\RequestHandlerBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\RecurseExtension.cs" />
     <Compile Include="Mapping\RootNode.cs" />
     <Compile Include="Mapping\ActionResults\UserError.cs" />
+    <Compile Include="RequestHandling\Response.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -63,7 +76,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="OneOf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OneOf.1.0.16\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+xamarinios10+MonoTouch10\OneOf.dll</HintPath>
+      <HintPath>..\packages\OneOf.2.0.21\lib\portable45-net45+win8+wp8+wpa81\OneOf.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

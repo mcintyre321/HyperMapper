@@ -1,53 +1,50 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using HyperMapper.RequestHandling;
 using OneOf;
 
 namespace HyperMapper.HyperModel
 {
-   
-
-    public class Resource  
+    public class Resource
     {
+        private readonly IEnumerable<MethodHandler> _methodHandlers;
+
         public Resource(Uri uri, string[] @class,
-            IEnumerable<OneOf<Operation, Link, Property>> children)
+            IEnumerable<Link> children, IEnumerable<MethodHandler> methodHandlers)
         {
+            _methodHandlers = methodHandlers;
             Uri = uri;
             Class = @class;
             Children = children;
         }
 
         public Uri Uri { get; private set; }
-      
+
 
         public IEnumerable<string> Class { get; private set; }
 
-        public IEnumerable<OneOf<Operation, Link, Property>> Children
-        {
-            get;
-        }
+        public IEnumerable<Link> Children { get; }
 
-        
- 
-        public OneOf<Resource, Operation, ChildNotFound> GetChildByUriSegment(string part)
+
+
+        public OneOf<Resource, None> GetChildByUriSegment(string part)
         {
             foreach (var child in Children)
             {
-                
-                if (child.IsT0 && child.AsT0.Href.ToString() == this.Uri.ToString().TrimEnd('/') + "/" + part)
-                    return child.AsT0;
-
-                if (child.IsT1 && child.AsT1.Uri.ToString() == this.Uri.ToString().TrimEnd('/') + "/" + part && child.AsT1.Follow != null)
-                    return child.AsT1.Follow();
-
+                if (child.Uri.ToString() == this.Uri.ToString().TrimEnd('/') + "/" + part)
+                    return child.Follow();
             }
 
-            return new ChildNotFound();
+            return new None();
         }
 
-        public class ChildNotFound
+
+        public OneOf<MethodHandler, None> GetMethodHandler(string method)
         {
+            var handler = _methodHandlers.FirstOrDefault(m => m.Method == method);
+            if (handler != null) return handler;
+            return new None();
         }
     }
 }

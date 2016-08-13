@@ -16,6 +16,8 @@ namespace HyperMapper.Owin
         public static async Task<OneOf<ModelBindingFailed, BoundModel>> BindArgsFromRequest(Tuple<Key, Type>[] argumentDefs,
             IOwinRequest request)
         {
+            if (argumentDefs.Length == 0) return new BoundModel(new Tuple<Key, object>[0]);
+
             switch (request.ContentType.Split(';')[0])
             {
                 case "application/json":
