@@ -85,10 +85,31 @@ namespace HyperMapper.Siren
                     //}, 
                     link =>
                     {
-                        links.Add(new SirenDotNet.Link(link.Uri, link.Rels.Select(r => r.ToString()).ToArray())
+                        if (link.Classes?.Contains("operation") ?? false)
                         {
-                            Title = link.Text,
-                        });
+                            var operationResource = link.Follow();
+
+                            var posttHandler = operationResource.GetMethodHandler(new Method.Post()).AsT0;
+
+                            var action = new SirenDotNet.Action(link.Text, link.Uri)
+                            {
+                                Class = link.Classes,
+                                Method = HttpVerbs.POST,
+                                Fields = posttHandler.Parameters.Select(mp => new Field()
+                                {
+                                    Name = mp.Key.ToString(),
+                                    Type = LookupFieldType(mp.Type)
+                                })
+                            };
+                            actions.Add(action);
+                        }
+                        else
+                        {
+                            links.Add(new SirenDotNet.Link(link.Uri, link.Rels.Select(r => r.ToString()).ToArray())
+                            {
+                                Title = link.Text,
+                            });
+                        }
                     },
                     property =>
                     {
@@ -105,6 +126,19 @@ namespace HyperMapper.Siren
                 Properties = properties.HasValues ? properties : null
             };
             return entity;
+        }
+
+        private FieldTypes LookupFieldType(MethodParameter.MethodParameterType type)
+        {
+            switch (type)
+            {
+                case MethodParameter.MethodParameterType.Text:
+                    return FieldTypes.Text;
+                case MethodParameter.MethodParameterType.Password:
+                    return FieldTypes.Password;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
 

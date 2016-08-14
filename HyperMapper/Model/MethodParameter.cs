@@ -3,20 +3,21 @@ using Newtonsoft.Json.Converters;
 
 namespace HyperMapper.Model
 {
-    public class ActionField
+    public class MethodParameter
     {
-        public ActionField(Key key, FieldType type)
+        public MethodParameter(Key key, MethodParameterType type)
         {
             Key = key;
             Type = type;
         }
 
+        public MethodParameter() { }
+
         public Key Key { get; private set; }
-        public FieldType Type { get; private set; }
-        public object Value { get; }
+        public MethodParameterType Type { get; private set; }
 
         [JsonConverter(typeof(StringEnumConverter))]
-        public enum FieldType
+        public enum MethodParameterType
         {
             Text,
             Password

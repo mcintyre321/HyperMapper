@@ -6,6 +6,7 @@ using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using Owin;
 using HyperMapper.Owin;
+using HyperMapper.RequestHandling;
 using Microsoft.Owin.Hosting;
 
 namespace HyperMapper.Examples.TaskList.OwinApp
@@ -32,7 +33,10 @@ namespace HyperMapper.Examples.TaskList.OwinApp
                 ServiceLocator = type => LocateAdaptors(type)
             };
 
-            obj.UseHypermedia(() => AppRoot, hyperMapperSettings);
+
+            
+            obj.UseHypermedia(() => 
+                X.MakeResourceFromNode(AppRoot, new Uri("/"), hyperMapperSettings.ServiceLocator), hyperMapperSettings);
 
             Process.Start(@"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", "http://localhost:12345");
         }

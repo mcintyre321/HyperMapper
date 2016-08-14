@@ -5,11 +5,11 @@
     <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6}</ProjectGuid>
+    <ProjectGuid>{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HyperMapper.Examples.TaskList.Domain</RootNamespace>
-    <AssemblyName>HyperMapper.Examples.TaskList.Domain</AssemblyName>
+    <RootNamespace>HyperMapper.Mapper</RootNamespace>
+    <AssemblyName>HyperMapper.Mapper</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -34,34 +34,32 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AppRoot.cs" />
-    <Compile Include="Board.cs" />
-    <Compile Include="Boards.cs" />
-    <Compile Include="Card.cs" />
-    <Compile Include="Ports\CurrentUserSetter.cs" />
-    <Compile Include="Ports\IdGenerator.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Task.cs" />
-    <Compile Include="Authentication.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\HyperMapper.Mapper\HyperMapper.Mapper.csproj">
-      <Project>{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}</Project>
-      <Name>HyperMapper.Mapper</Name>
-    </ProjectReference>
+    <!-- A reference to the entire .NET Framework is automatically included -->
     <ProjectReference Include="..\Hypermapper\HyperMapper.csproj">
-      <Project>{410e2f8d-4641-4f94-867c-aae2768c75bd}</Project>
+      <Project>{410E2F8D-4641-4F94-867C-AAE2768C75BD}</Project>
       <Name>HyperMapper</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActionResults\OK.cs" />
+    <Compile Include="ActionResults\UserError.cs" />
+    <Compile Include="ExposeAttribute.cs" />
+    <Compile Include="HyperMapperAttribute.cs" />
+    <Compile Include="InjectAttribute.cs" />
+    <Compile Include="INode.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RelAttribute.cs" />
+    <Compile Include="RootNode.cs" />
+    <Compile Include="X.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OneOf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="OneOf">
       <HintPath>..\packages\OneOf.2.0.21\lib\portable45-net45+win8+wp8+wpa81\OneOf.dll</HintPath>
-      <Private>True</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>

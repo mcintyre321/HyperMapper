@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using HyperMapper.Model;
 using HyperMapper.RequestHandling;
 using Microsoft.Owin;
 using Newtonsoft.Json;
@@ -13,10 +14,10 @@ namespace HyperMapper.Owin
 {
     public static class ModelBinder
     {
-        public static async Task<OneOf<ModelBindingFailed, MethodParameters>> BindArgsFromRequest(Tuple<Key, Type>[] argumentDefs,
+        public static async Task<OneOf<ModelBindingFailed, MethodArguments>> BindArgsFromRequest(MethodParameter[] parameters,
             IOwinRequest request)
         {
-            if (argumentDefs.Length == 0) return new MethodParameters(new Tuple<Key, object>[0]);
+            if (parameters.Length == 0) return new MethodArguments(new Tuple<Key, object>[0]);
 
             switch (request.ContentType.Split(';')[0])
             {
@@ -26,12 +27,12 @@ namespace HyperMapper.Owin
                     {
                         var rawBody = await sr.ReadToEndAsync();
                         var jObject = JObject.Parse(rawBody);
-                        var tuples = argumentDefs
+                        var tuples = parameters
                             .Select(
-                                ai =>
-                                    Tuple.Create(ai.Item1, jObject[ai.Item1.ToString()]?.ToObject(ai.Item2)))
+                                methodParameter =>
+                                    Tuple.Create(methodParameter.Key, jObject[methodParameter.Key.ToString()]?.ToObject(FieldTypeToTypeLookup(methodParameter.Type))))
                             .ToArray();
-                        return new MethodParameters(tuples);
+                        return new MethodArguments(tuples);
                     }
                 }
                 case "application/x-www-form-urlencoded":
@@ -40,8 +41,8 @@ namespace HyperMapper.Owin
                         var rawBody = await sr.ReadToEndAsync();
                         var dict = QueryStringHelper.QueryStringToDict(rawBody);
                         var jObject = JObject.Parse(JsonConvert.SerializeObject(dict));
-                        return new MethodParameters(argumentDefs
-                            .Select(ai => Tuple.Create(ai.Item1, jObject[ai.Item1.ToString()]?.ToObject(ai.Item2)))
+                        return new MethodArguments(parameters
+                            .Select(ai => Tuple.Create(ai.Key, jObject[ai.Key.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
                             .ToArray());
                     }
                     break;
@@ -49,6 +50,18 @@ namespace HyperMapper.Owin
             throw new NotImplementedException();
         }
 
+        private static Type FieldTypeToTypeLookup(MethodParameter.MethodParameterType methodParameter)
+        {
+            switch (methodParameter)
+            {
+                case MethodParameter.MethodParameterType.Text:
+                    return typeof(string);
+                case MethodParameter.MethodParameterType.Password:
+                    return typeof(string);
+                default:
+                    throw new NotImplementedException();
+            }
+        }
     }
 
 }

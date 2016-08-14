@@ -103,6 +103,10 @@
       <Project>{24743e70-7a8c-4d91-8ec5-e2c5da4685b6}</Project>
       <Name>HyperMapper.Examples.TaskList.ResourceModel</Name>
     </ProjectReference>
+    <ProjectReference Include="..\HyperMapper.Mapper\HyperMapper.Mapper.csproj">
+      <Project>{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}</Project>
+      <Name>HyperMapper.Mapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HyperMapper.Owin\HyperMapper.Owin.csproj">
       <Project>{5ac0cff9-6d73-42cf-a8ac-cc087fe9f322}</Project>
       <Name>HyperMapper.Owin</Name>

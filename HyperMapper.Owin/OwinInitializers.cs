@@ -26,11 +26,11 @@ namespace HyperMapper.Owin
 
         private static async Task HandleRequest(HyperMapperSettings settings, OwinContext ctx, RequestHandler requestHandler)
         {
-            RequestHandling.ModelBinder modelBinder = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
+            RequestHandling.BindModel bindModel = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
             var request = new Request(Method.Parse(ctx.Request.Method), ctx.Request.Uri)
             {
             };
-            var response = await requestHandler(request, modelBinder);
+            var response = await requestHandler(request, bindModel);
             response.Switch(
                 methodNotAllowed => {},
                 notFoundResponse =>
