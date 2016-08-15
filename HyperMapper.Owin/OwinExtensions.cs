@@ -1,6 +1,5 @@
 using System;
 using HyperMapper;
-using HyperMapper.Mapping;
 using HyperMapper.Model;
 using HyperMapper.RequestHandling;
 using Owin;

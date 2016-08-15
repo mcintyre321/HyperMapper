@@ -125,10 +125,12 @@ namespace HyperMapper.RequestHandling
                 })
                 .Select(pair => new Link(
                     pair.methodInfo.Name,
-                    new Rel[] {new Rel("action"), new Rel(pair.methodInfo.Name)},
+
+                    new Rel[] {new Rel("operation"), new Rel(pair.methodInfo.Name)},
                     pair.methodUri)
                 {
-                    Follow = () => BuildFromMethodInfo(node, pair.methodUri, pair.methodInfo, serviceLocator)
+                    Follow = () => BuildFromMethodInfo(node, pair.methodUri, pair.methodInfo, serviceLocator),
+                    Classes = new [] { "operation"}
                 });
         }
 

@@ -70,6 +70,7 @@ WriteLiteral(@";
             type: 'POST',
             data: (form2js($form[0])),
             dataType: 'json',
+            accepts: ""application/vnd.siren+json; charset=utf-8"",
             success: function(data) {
                 component.setState(data);
             }, 

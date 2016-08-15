@@ -21,10 +21,7 @@ namespace HyperMapper.Model
         }
 
         public Uri Uri { get; private set; }
-
-
         public IEnumerable<string> Class { get; private set; }
-
         public IEnumerable<Link> Children { get; }
 
 
