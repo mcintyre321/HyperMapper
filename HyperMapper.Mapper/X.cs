@@ -20,25 +20,37 @@ namespace HyperMapper.RequestHandling
             public Uri propertyUri { get; set; }
         }
 
-        public static Resource MakeResourceFromNode(INode node, Uri nodeUri, Func<Type, object> serviceLocator)
+        public static Resource MakeResourceFromNode(Tuple<INode,Uri> nodeAndUri, Tuple<INode, Uri> parentNodeAndUri, Func<Type, object> serviceLocator)
         {
 
-            var type = node.GetType().GetTypeInfo();
-
+            var type = nodeAndUri.Item1.GetType().GetTypeInfo();
+            var nodeUri = nodeAndUri.Item2;
+            var node = nodeAndUri.Item1;
             //var linkedChildResources = GetLinksFromTypeProperties(node, nodeUri, serviceLocator, type);
             var linkedActionResources = X.GetLinksFromTypeMethods(type, nodeUri, node, serviceLocator);
+
 
 
             var childLinks =
                 node.ChildKeys.Select(node.GetChild)
                     .Select(
-                        c => new Link(c.Key.ToString(), new Rel[] {new Rel("child"),}, new Uri(nodeUri.ToString().TrimEnd('/') + "/" + c.Key, UriKind.Relative))
+                        c =>
                         {
-                            Follow = () => MakeResourceFromNode(c, new Uri(nodeUri.ToString().TrimEnd('/') + "/" + c.Key, UriKind.Relative), serviceLocator)
+                            var uri = new Uri(nodeUri.ToString().TrimEnd('/') + "/" + c.Key, UriKind.Relative);
+                            return new Link(c.Key.ToString(), new Rel[] {new Rel("child"),}, uri)
+                            {
+                                Follow = () => MakeResourceFromNode(Tuple.Create(c, uri),nodeAndUri, serviceLocator)
+                            };
                         });
 
             var links = //linkedChildResources.Concat
                 (linkedActionResources).Concat(childLinks);
+
+            if (node.Parent != null)
+            {
+                links = links.Concat(new[] {new Link("parent", new Rel[] {new Rel("parent"),}, parentNodeAndUri.Item2)
+                });
+            }
 
 
             var methodHandlers = new[]
@@ -73,10 +85,14 @@ namespace HyperMapper.RequestHandling
             return entity;
         }
  
-        private static IEnumerable<Link> GetLinksFromTypeProperties(INode node, Uri nodeUri,
+        private static IEnumerable<Link> GetLinksFromTypeProperties(Tuple<INode, Uri> nodeAndUri,
             Func<Type, object> serviceLocator,
             TypeInfo type)
         {
+            var nodeUri = nodeAndUri.Item2;
+            var node = nodeAndUri.Item1;
+
+
             var linkedChildResources = MarkedUpProperties(nodeUri, type)
                 .Where(IsLinkedResource)
                 .Select(x =>
@@ -105,7 +121,7 @@ namespace HyperMapper.RequestHandling
 
                         return new Link(x.propertyInfo.Name, rels.ToArray(), x.propertyUri)
                         {
-                            Follow = () => MakeResourceFromNode(value, x.propertyUri, serviceLocator)
+                            Follow = () => MakeResourceFromNode(Tuple.Create(value, x.propertyUri), nodeAndUri , serviceLocator)
                         };
                     }
                 });

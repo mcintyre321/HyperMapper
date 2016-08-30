@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using HyperMapper.Examples.TaskList.Domain;
 using HyperMapper.Examples.TaskList.Domain.Ports;
+using HyperMapper.Mapping;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using Owin;
@@ -38,7 +39,7 @@ namespace HyperMapper.Examples.TaskList.OwinApp
 
             var appRoot = BuildAppRoot();
             obj.UseHypermedia(() => 
-                X.MakeResourceFromNode(appRoot, new Uri("/", UriKind.Relative), hyperMapperSettings.ServiceLocator), hyperMapperSettings);
+                X.MakeResourceFromNode(Tuple.Create((INode) appRoot, new Uri("/", UriKind.Relative)), null, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
 
             Process.Start(@"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", "http://localhost:12345");
         }
