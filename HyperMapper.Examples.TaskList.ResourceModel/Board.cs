@@ -19,7 +19,10 @@ namespace HyperMapper.Examples.TaskList.Domain
         [Expose]
         public void AddCard(string description, [Inject] IdGenerator guid)
         {
-            this._cards.Add(new Card(this, guid()) { Description = description });
+            var item = new Card(this, guid()) { Description = description };
+            this._cards.Add(item);
+            this.AddChild(item);
+
         }
 
         [Expose]

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using HttpMultipartParser;
 using HyperMapper.Model;
 using HyperMapper.RequestHandling;
 using Microsoft.Owin;
@@ -45,6 +46,19 @@ namespace HyperMapper.Owin
                             .Select(ai => Tuple.Create(ai.Key, jObject[ai.Key.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
                             .ToArray());
                     }
+                    break;
+                case "multipart/form-data":
+                    var parser = new MultipartFormDataParser(request.Body);
+
+                    var multiPartJObject = new JObject();
+                    foreach (var parameterPart in parser.Parameters)
+                    {
+                        multiPartJObject[parameterPart.Name] = parameterPart.Data;
+                    }
+                    return new MethodArguments(parameters
+                        .Select(ai => Tuple.Create(ai.Key, multiPartJObject[ai.Key.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
+                        .ToArray());
+
                     break;
             }
             throw new NotImplementedException();

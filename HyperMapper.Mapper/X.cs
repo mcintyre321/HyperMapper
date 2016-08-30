@@ -25,10 +25,21 @@ namespace HyperMapper.RequestHandling
 
             var type = node.GetType().GetTypeInfo();
 
-            var linkedChildResources = GetLinksFromTypeProperties(node, nodeUri, serviceLocator, type);
+            //var linkedChildResources = GetLinksFromTypeProperties(node, nodeUri, serviceLocator, type);
             var linkedActionResources = X.GetLinksFromTypeMethods(type, nodeUri, node, serviceLocator);
 
-            var links = linkedChildResources.Concat(linkedActionResources);
+
+            var childLinks =
+                node.ChildKeys.Select(node.GetChild)
+                    .Select(
+                        c => new Link(c.Key.ToString(), new Rel[] {new Rel("child"),}, new Uri(nodeUri.ToString().TrimEnd('/') + "/" + c.Key, UriKind.Relative))
+                        {
+                            Follow = () => MakeResourceFromNode(c, new Uri(nodeUri.ToString().TrimEnd('/') + "/" + c.Key, UriKind.Relative), serviceLocator)
+                        });
+
+            var links = //linkedChildResources.Concat
+                (linkedActionResources).Concat(childLinks);
+
 
             var methodHandlers = new[]
             {
@@ -70,19 +81,33 @@ namespace HyperMapper.RequestHandling
                 .Where(IsLinkedResource)
                 .Select(x =>
                 {
-                    var value = (INode) x.propertyInfo.GetValue(node);
-                    var rels = x.propertyInfo.GetCustomAttributes<RelAttribute>()
-                        .Select(ra => new Rel(ra.RelString));
-
-                    if (IsChildUri(nodeUri, x.propertyUri))
+                    //if (x.propertyInfo.PropertyType.GetGenericTypeDefinition() == typeof(IEnumerable<>))
+                    //{
+                    //    var itemsNode = new Node(node, x.propertyInfo.Name);
+                    //    var items = x.propertyInfo.GetValue(node) as IEnumerable<object>;
+                    //    var nodes = items.Select
+                    //    foreach (var item in nodes)
+                    //    {
+                    //        itemsNode.AddChild(item);
+                    //    }
+                    //    return itemsNode;
+                    //}
+                    //else
                     {
-                        rels = rels.Append(new Rel("child"));
+                        var value = (INode) x.propertyInfo.GetValue(node);
+                        var rels = x.propertyInfo.GetCustomAttributes<RelAttribute>()
+                            .Select(ra => new Rel(ra.RelString));
+
+                        if (IsChildUri(nodeUri, x.propertyUri))
+                        {
+                            rels = rels.Append(new Rel("child"));
+                        }
+
+                        return new Link(x.propertyInfo.Name, rels.ToArray(), x.propertyUri)
+                        {
+                            Follow = () => MakeResourceFromNode(value, x.propertyUri, serviceLocator)
+                        };
                     }
-
-                    return new Link(x.propertyInfo.Name, rels.ToArray(), x.propertyUri)
-                    {
-                        Follow = () => MakeResourceFromNode(value, x.propertyUri, serviceLocator)
-                    };
                 });
             return linkedChildResources;
         }

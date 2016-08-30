@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using HyperMapper.Examples.TaskList.Domain;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 using Microsoft.Owin.FileSystems;
@@ -13,7 +14,8 @@ namespace HyperMapper.Examples.TaskList.OwinApp
 {
     public class Program
     {
-        private static readonly AppRoot AppRoot = new AppRoot();
+        
+
 
         public static void Main(string[] args)
         {
@@ -34,11 +36,21 @@ namespace HyperMapper.Examples.TaskList.OwinApp
             };
 
 
-            
+            var appRoot = BuildAppRoot();
             obj.UseHypermedia(() => 
-                X.MakeResourceFromNode(AppRoot, new Uri("/", UriKind.Relative), hyperMapperSettings.ServiceLocator), hyperMapperSettings);
+                X.MakeResourceFromNode(appRoot, new Uri("/", UriKind.Relative), hyperMapperSettings.ServiceLocator), hyperMapperSettings);
 
             Process.Start(@"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", "http://localhost:12345");
+        }
+
+        private static AppRoot BuildAppRoot()
+        {
+            var appRoot = new AppRoot();
+            appRoot.Authentication.Register("testuser", "password");
+            appRoot.Boards.AddBoard("My tasks", () => "board1");
+            var board = appRoot.Boards.Items.Single(i => i.Key == "board1");
+            board.AddCard("Finish HyperMapper", () => "card1");
+            return appRoot;
         }
 
         /// <summary>

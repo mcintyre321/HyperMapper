@@ -58,7 +58,7 @@ namespace HyperMapper.Mapping
         /// <typeparam name="T"></typeparam>
         /// <param name="node"></param>
         /// <returns>The child, for fluent method chaining</returns>
-        public T AddChild<T>(T node) where T : Node
+        public T AddChild<T>(T node) where T : INode
         {
             if (node.Parent != this) throw new InvalidOperationException();
             if (this.HasChild(node.Key)) throw new InvalidOperationException();
@@ -74,22 +74,6 @@ namespace HyperMapper.Mapping
         protected Node(TParent parent, Key key) : base(parent, key)
         {
             this.Parent = parent;
-        }
-    }
-
-
-    [HyperMapper(UseTypeNameAsClassNameForEntity = false)]
-    public class Node<TValue, TParent> : Node<TParent> where TParent : Node
-    {
-        public TValue Value { get; }
-        protected Node(TValue value, TParent parent, Key key) : base(parent, key)
-        {
-            this.Value = value;
-        }
-
-        public static implicit operator TValue(Node<TValue, TParent> node)
-        {
-            return node.Value;
         }
     }
 }

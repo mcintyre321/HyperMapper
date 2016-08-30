@@ -10,6 +10,7 @@ namespace HyperMapper.Examples.TaskList.Domain
         public Boards(AppRoot parent, Key key) : base(parent, key) { }
 
         List<Board> _boards = new List<Board>();
+        [Expose]
         public IEnumerable<Board> Items => _boards;
 
 
