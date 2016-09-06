@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Owin", "HyperMapper.Owin\HyperMapper.Owin.csproj", "{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Siren", "HyperMapper.Siren\HyperMapper.Siren.csproj", "{8FA8A692-DECE-4444-894A-CE7D613801E8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Mapper", "HyperMapper.Mapper\HyperMapper.Mapper.csproj", "{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Examples.TaskList.Web", "HyperMapper.Examples.TaskList.Web\HyperMapper.Examples.TaskList.Web.csproj", "{D4501B25-2E89-4C78-9D83-639D56CE6D2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +49,10 @@ Global
 		{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4501B25-2E89-4C78-9D83-639D56CE6D2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4501B25-2E89-4C78-9D83-639D56CE6D2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4501B25-2E89-4C78-9D83-639D56CE6D2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4501B25-2E89-4C78-9D83-639D56CE6D2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,5 +60,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{731ECC82-922C-4CA2-85A6-6F2E8125A5CD} = {E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}
 		{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6} = {E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}
+		{D4501B25-2E89-4C78-9D83-639D56CE6D2D} = {E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}
 	EndGlobalSection
 EndGlobal

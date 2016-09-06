@@ -1,35 +1,25 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using HyperMapper.Examples.TaskList.Domain;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 using HyperMapper.Mapping;
-using Microsoft.Owin.FileSystems;
-using Microsoft.Owin.StaticFiles;
-using Owin;
 using HyperMapper.Owin;
 using HyperMapper.RequestHandling;
-using Microsoft.Owin.Hosting;
+using Microsoft.Owin;
+using Microsoft.Owin.FileSystems;
+using Owin;
 
-namespace HyperMapper.Examples.TaskList.OwinApp
+[assembly: OwinStartup(typeof(HyperMapper.Examples.TaskList.Web.Startup))]
+
+namespace HyperMapper.Examples.TaskList.Web
 {
-    public class Program
+    public class Startup
     {
-        
-
-
-        public static void Main(string[] args)
+        public void Configuration(IAppBuilder app)
         {
-            using (WebApp.Start("http://localhost:12345", Configure))
-                Console.ReadLine();
-        }
-
-        private static void Configure(IAppBuilder obj)
-        {
-
-            var contentFileSystem = new PhysicalFileSystem(@"..\..\Content");
-            obj.UseFileServer(new FileServerOptions() { FileSystem = contentFileSystem });
-
+          
             var hyperMapperSettings = new HyperMapperSettings()
             {
                 BasePath = "/",
@@ -38,10 +28,9 @@ namespace HyperMapper.Examples.TaskList.OwinApp
 
 
             var appRoot = BuildAppRoot();
-            obj.UseHypermedia(() => 
-                X.MakeResourceFromNode(Tuple.Create((INode) appRoot, new Uri("/", UriKind.Relative)), null, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
+            app.UseHypermedia(() =>
+                X.MakeResourceFromNode(Tuple.Create((INode)appRoot, new Uri("/", UriKind.Relative)), null, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
 
-            Process.Start(@"c:\Program Files (x86)\Google\Chrome\Application\chrome.exe", "http://localhost:12345");
         }
 
         private static AppRoot BuildAppRoot()

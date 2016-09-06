@@ -31,16 +31,16 @@ namespace HyperMapper.Owin
             {
             };
             var response = await requestHandler(request, bindModel);
-            response.Switch(
-                methodNotAllowed => {},
-                notFoundResponse =>
-                {
-                },
-                modelBindingFailedResponse => {}, 
+            var wrote = await response.Match<Task<bool>>(
+                methodNotAllowed => Task.FromResult(false),
+                notFoundResponse => Task.FromResult(false),
+                modelBindingFailedResponse => Task.FromResult(false), 
                 async representationResponse =>
                 {
                     await ResponseWriter.Write(ctx, representationResponse.Representation, settings);
+                    return true;
                 });
+            
         }
     }
 }
