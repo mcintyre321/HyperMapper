@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HyperMapper.Model;
+using HyperMapper.RepresentationModel;
 using HyperMapper.Siren;
 using Microsoft.Owin;
 using Newtonsoft.Json;
@@ -12,7 +12,7 @@ namespace HyperMapper.Owin
 {
     internal static class ResponseWriter
     {
-        public static async Task Write(OwinContext ctx, Representation representation, HyperMapperSettings settings)
+        public static async Task Write(OwinContext ctx, Uri locationHeader, Representation representation, HyperMapperSettings settings)
         {
             Func<string, string, Task> writeStringToResponse = async (contentType, body) =>
             {

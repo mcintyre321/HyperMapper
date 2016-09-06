@@ -13,10 +13,7 @@ namespace HyperMapper.Examples.TaskList.Domain
         [Expose]
         public Boards Boards { get; }
 
-        [Expose]
-        public string Title => "Task Lists App";
-
-        public AppRoot() 
+        public AppRoot() :base("Task Lists App")
         {
             this.Authentication = AddChild(new Authentication(this, nameof(Authentication)));
             this.Boards = AddChild(new Boards(this, nameof(Boards)));

@@ -1,4 +1,6 @@
-using HyperMapper.Model;
+using System;
+using System.Collections.Generic;
+using HyperMapper.RepresentationModel;
 using OneOf;
 
 namespace HyperMapper.RequestHandling
@@ -7,7 +9,8 @@ namespace HyperMapper.RequestHandling
         Response.MethodNotAllowed,
         Response.NotFoundResponse,
         Response.ModelBindingFailedResponse,
-        Response.RepresentationResponse
+        Response.RepresentationResponse,
+        Response.CreatedResponse
         >
     {
         public class MethodNotAllowed : Response { }
@@ -23,5 +26,17 @@ namespace HyperMapper.RequestHandling
             }
 
         }
+        public class CreatedResponse : Response
+        {
+            public string Description { get; set; }
+            public Uri Uri { get; set; }
+
+            public CreatedResponse(string description, Uri uri)
+            {
+                Description = description;
+                Uri = uri;
+            }
+        }
+
     }
 }

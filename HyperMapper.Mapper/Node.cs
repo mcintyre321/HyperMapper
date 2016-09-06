@@ -16,14 +16,20 @@ namespace HyperMapper.Mapping
         public INode Parent { get; }
         public Key Key { get; }
         public IEnumerable<Key> ChildKeys => _children.Keys;
+        public string Title { get; private set; }
 
-        internal Node() { }
-        internal Node(INode parent, Key key)
+        internal Node(string title)
+        {
+            Title = title;
+        }
+
+        internal Node(INode parent, Key key, string title)
         {
             if (parent == null) throw new ArgumentException();
             if (key == null || parent.HasChild(key)) throw new ArgumentException();
             this.Parent = parent;
             this.Key = key;
+            Title = title;
         }
 
         public virtual bool HasChild(Key key)
@@ -71,7 +77,7 @@ namespace HyperMapper.Mapping
     public class Node<TParent> : Node where TParent : Node
     {
         public new TParent Parent { get; }
-        protected Node(TParent parent, Key key) : base(parent, key)
+        protected Node(TParent parent, Key key, string title) : base(parent, key, title)
         {
             this.Parent = parent;
         }

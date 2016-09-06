@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HyperMapper.RequestHandling;
 
-namespace HyperMapper.Model
+namespace HyperMapper.ResourceModel
 {
     public class MethodHandler
     {
-        private readonly Func<IEnumerable<Tuple<Key, object>>, Task<InvokeResult>> _invoke;
+        public delegate Task<InvokeResult> InvokeMethodDelegate(IEnumerable<Tuple<Key, object>>  args);
+        private readonly InvokeMethodDelegate _invoke;
 
-        public MethodHandler(Method method, MethodParameter[] parameters, Func<IEnumerable<Tuple<Key, object>>, Task<InvokeResult>> invoke)
+        public MethodHandler(Method method, MethodParameter[] parameters, InvokeMethodDelegate invoke)
         {
             _invoke = invoke;
             Method = method;

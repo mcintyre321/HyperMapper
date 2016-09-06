@@ -1,6 +1,7 @@
 using System;
+using HyperMapper.ResourceModel;
 
-namespace HyperMapper.Model
+namespace HyperMapper.RepresentationModel
 {
     public class Link  
     {

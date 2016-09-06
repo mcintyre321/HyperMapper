@@ -10,7 +10,7 @@ namespace HyperMapper.Examples.TaskList.Domain
 {
     public class Authentication : Node<AppRoot>
     {
-        public Authentication(AppRoot parent, Key key) : base(parent, key) { }
+        public Authentication(AppRoot parent, Key key) : base(parent, key, nameof(Authentication)) { }
         [Expose]
         public OneOf.OneOf<OK, UserError> Register(string username, string password)
         {

@@ -1,5 +1,5 @@
 using System;
-using HyperMapper.Model;
+using HyperMapper.ResourceModel;
 
 namespace HyperMapper.RequestHandling
 {

@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using HyperMapper.Model;
+using HyperMapper.RepresentationModel;
 using HyperMapper.RequestHandling;
+using HyperMapper.ResourceModel;
 using Microsoft.Owin;
+using OneOf;
 
 namespace HyperMapper.Owin
 {
@@ -37,7 +39,12 @@ namespace HyperMapper.Owin
                 modelBindingFailedResponse => Task.FromResult(false), 
                 async representationResponse =>
                 {
-                    await ResponseWriter.Write(ctx, representationResponse.Representation, settings);
+                    await ResponseWriter.Write(ctx, null, representationResponse.Representation, settings);
+                    return true;
+                },
+                async createdResponse =>
+                {
+                    await ResponseWriter.Write(ctx, createdResponse.Uri, new Representation(new Class[0] { }, "CREATED", ctx.Request.Uri, new OneOf<Link, Property, Operation>[0]), settings);
                     return true;
                 });
             

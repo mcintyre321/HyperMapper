@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HyperMapper.Model;
+using HyperMapper.RepresentationModel;
 using HyperMapper.RequestHandling;
+using HyperMapper.ResourceModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -11,7 +12,7 @@ using Newtonsoft.Json.Serialization;
 using OneOf;
 using SirenDotNet;
 using Action = SirenDotNet.Action;
-using Link = HyperMapper.Model.Link;
+using Link = HyperMapper.RepresentationModel.Link;
 
 namespace HyperMapper.Siren
 {
@@ -64,62 +65,82 @@ namespace HyperMapper.Siren
             var subEntities = new List<SubEntity>();
 
             var properties = new JObject();
-
-
-            foreach (var pair in representation.Children)
+           
             {
-                pair.Switch(
-                    //    subEntity =>
-                    //{
-                    //    subEntities.Add(BuildSubEntityFromHypermedia(subEntity));
-                    //},
-                    //subEntityRef =>
-                    //{
-                    //    var item = MapSubEntityLink(subEntityRef);
-                    //    subEntities.Add(item);
-                    //}, 
-                    //action =>
-                    //{
-                    //    var item = MapAction(action);
-                    //    actions.Add(item);
-                    //}, 
-                    link =>
-                    {
-                        if (link.Classes?.Contains("operation") ?? false)
+
+                foreach (var pair in representation.Children)
+                {
+                    pair.Switch(
+                        //    subEntity =>
+                        //{
+                        //    subEntities.Add(BuildSubEntityFromHypermedia(subEntity));
+                        //},
+                        //subEntityRef =>
+                        //{
+                        //    var item = MapSubEntityLink(subEntityRef);
+                        //    subEntities.Add(item);
+                        //}, 
+                        //action =>
+                        //{
+                        //    var item = MapAction(action);
+                        //    actions.Add(item);
+                        //}, 
+                        link =>
                         {
-                            var operationResource = link.Follow();
-
-                            var posttHandler = operationResource.GetMethodHandler(new Method.Post()).AsT0;
-
-                            var action = new SirenDotNet.Action(link.Text, link.Uri)
+                            if (link.Classes?.Contains("operation") ?? false)
                             {
-                                Class = link.Classes,
-                                Method = HttpVerbs.POST,
-                                Fields = posttHandler.Parameters.Select(mp => new Field()
+                                var operationResource = link.Follow();
+
+                                var posttHandler = operationResource.GetMethodHandler(new Method.Post()).AsT0;
+
+                                var action = new SirenDotNet.Action(link.Text, link.Uri)
                                 {
-                                    Name = mp.Key.ToString(),
-                                    Type = LookupFieldType(mp.Type)
-                                })
-                            };
-                            actions.Add(action);
-                        }
-                        else
-                        {
-                            links.Add(new SirenDotNet.Link(link.Uri, link.Rels.Select(r => r.ToString()).ToArray())
+                                    Class = link.Classes,
+                                    Method = HttpVerbs.POST,
+                                    Fields = posttHandler.Parameters.Select(mp => new Field()
+                                    {
+                                        Name = mp.Key.ToString(),
+                                        Type = LookupFieldType(mp.Type)
+                                    })
+                                };
+                                actions.Add(action);
+                            }
+                            else
                             {
-                                Title = link.Text,
-                            });
-                        }
-                    },
-                    property =>
-                    {
-                        properties[property.Name.ToString()] = property.Value;
-                    });
+                                links.Add(new SirenDotNet.Link(link.Uri, link.Rels.Select(r => r.ToString()).ToArray())
+                                {
+                                    Title = link.Text,
+                                });
+                            }
+                        },
+                        property =>
+                        {
+                            properties[property.Name.ToString()] = property.Value;
+                        },
+                        operation =>
+                        {
+                            {
+                                 
+
+                                var action = new SirenDotNet.Action(operation.Name, operation.Uri)
+                                {
+                                    Method = HttpVerbs.POST,
+                                    Fields = operation.Parameters.Select(mp => new Field()
+                                    {
+                                        Name = mp.Key.ToString(),
+                                        Type = LookupFieldType(mp.Type)
+                                    })
+                                };
+                                actions.Add(action);
+                            }
+                        });
+                }
             }
 
             var entity = new SirenDotNet.Entity
             {
-                Class = representation.Class.Any() ? representation.Class : null,
+                Title = representation.Title,
+                Class = representation.Class?.Select(c => c.ToString()),
                 Links = links.Any() ? links : null,
                 Actions = actions.Any() ? actions : null,
                 Entities = subEntities.Any() ? subEntities : null,

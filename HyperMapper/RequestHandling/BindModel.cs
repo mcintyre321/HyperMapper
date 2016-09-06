@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using HyperMapper.Model;
+using HyperMapper.ResourceModel;
 using OneOf;
 
 namespace HyperMapper.RequestHandling

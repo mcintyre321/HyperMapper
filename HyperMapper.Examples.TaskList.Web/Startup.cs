@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using HyperMapper.Examples.TaskList.Domain;
 using HyperMapper.Examples.TaskList.Domain.Ports;
+using HyperMapper.Mapper;
 using HyperMapper.Mapping;
 using HyperMapper.Owin;
 using HyperMapper.RequestHandling;
@@ -29,7 +30,7 @@ namespace HyperMapper.Examples.TaskList.Web
 
             var appRoot = BuildAppRoot();
             app.UseHypermedia(() =>
-                X.MakeResourceFromNode(Tuple.Create((INode)appRoot, new Uri("/", UriKind.Relative)), null, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
+                Functions.MakeResourceFromNode(Tuple.Create((INode)appRoot, new Uri("/", UriKind.Relative)), null, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
 
         }
 
@@ -37,9 +38,9 @@ namespace HyperMapper.Examples.TaskList.Web
         {
             var appRoot = new AppRoot();
             appRoot.Authentication.Register("testuser", "password");
-            appRoot.Boards.AddBoard("My tasks", () => "board1");
+            appRoot.Boards.AddBoard("My tasks", "Things I need to do", () => "board1");
             var board = appRoot.Boards.Items.Single(i => i.Key == "board1");
-            board.AddCard("Finish HyperMapper", () => "card1");
+            board.AddCard("Finish HyperMapper", "Coding n stuff", () => "card1");
             return appRoot;
         }
 

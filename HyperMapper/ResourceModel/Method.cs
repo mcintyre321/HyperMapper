@@ -1,7 +1,7 @@
 using System;
 using OneOf;
 
-namespace HyperMapper.RequestHandling
+namespace HyperMapper.ResourceModel
 {
     public class Method : OneOfBase<Method.Get, Method.Post>
     {

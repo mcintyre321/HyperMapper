@@ -1,4 +1,4 @@
-namespace HyperMapper.Model
+namespace HyperMapper.ResourceModel
 {
     public class ObjectResult
     {

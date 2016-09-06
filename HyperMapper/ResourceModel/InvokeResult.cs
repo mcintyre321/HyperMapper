@@ -1,6 +1,7 @@
+using HyperMapper.RepresentationModel;
 using OneOf;
 
-namespace HyperMapper.Model
+namespace HyperMapper.ResourceModel
 {
     public class InvokeResult : OneOfBase<InvokeResult.RepresentationResult>
     {

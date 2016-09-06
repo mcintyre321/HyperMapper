@@ -1,7 +1,7 @@
 using System;
 using HyperMapper;
-using HyperMapper.Model;
 using HyperMapper.RequestHandling;
+using HyperMapper.ResourceModel;
 using Owin;
 
 namespace HyperMapper.Owin

@@ -1,7 +1,7 @@
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace HyperMapper.Model
+namespace HyperMapper.ResourceModel
 {
     public class MethodParameter
     {

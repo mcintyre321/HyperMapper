@@ -10,12 +10,12 @@ namespace HyperMapper.Examples.TaskList.Domain
         List<Task> _tasks = new List<Task>();
         [Expose]
         public string Description { get; set; }
-        public Card(Board parent, Key key) : base(parent, key) { }
+        public Card(Board parent, Key key, string title) : base(parent, key, title) { }
 
         [Expose]
-        public void AddTask(string description, [Inject] IdGenerator idGenerator)
+        public void AddTask(string title, string description, [Inject] IdGenerator idGenerator)
         {
-            this._tasks.Add(new Task(this, new Key(idGenerator()))
+            this._tasks.Add(new Task(this, new Key(idGenerator()), title)
             {
                 Description = description
             });

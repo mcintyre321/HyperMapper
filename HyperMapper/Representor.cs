@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using HyperMapper.Model;
+using HyperMapper.RepresentationModel;
 
 namespace HyperMapper
 {

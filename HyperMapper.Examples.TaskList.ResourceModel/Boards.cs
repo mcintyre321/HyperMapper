@@ -7,7 +7,7 @@ namespace HyperMapper.Examples.TaskList.Domain
 {
     public class Boards : Node<AppRoot>
     {
-        public Boards(AppRoot parent, Key key) : base(parent, key) { }
+        public Boards(AppRoot parent, Key key) : base(parent, key, nameof(Boards)) { }
 
         List<Board> _boards = new List<Board>();
         [Expose]
@@ -15,11 +15,12 @@ namespace HyperMapper.Examples.TaskList.Domain
 
 
         [Expose]
-        public void AddBoard(string description, [Inject] IdGenerator guid)
+        public Board AddBoard(string title, string description, [Inject] IdGenerator guid)
         {
-            var board = new Board(this, guid()) { Title = description };
+            var board = new Board(this, guid(), title) { Description = description };
             AddChild(board);
             this._boards.Add(board);
+            return board;
         }
 
     }

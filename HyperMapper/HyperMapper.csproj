@@ -35,23 +35,24 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
-    <Compile Include="Model\InvokeResult.cs" />
-    <Compile Include="Model\Method.cs" />
-    <Compile Include="Model\MethodHandler.cs" />
-    <Compile Include="Model\None.cs" />
-    <Compile Include="Model\ObjectResult.cs" />
-    <Compile Include="Model\Representation.cs" />
+    <Compile Include="RepresentationModel\Class.cs" />
+    <Compile Include="RepresentationModel\Operation.cs" />
+    <Compile Include="ResourceModel\InvokeResult.cs" />
+    <Compile Include="ResourceModel\Method.cs" />
+    <Compile Include="ResourceModel\MethodHandler.cs" />
+    <Compile Include="ResourceModel\ObjectResult.cs" />
+    <Compile Include="RepresentationModel\Representation.cs" />
     <Compile Include="Helpers\ForEachExtension.cs" />
     <Compile Include="Key.cs" />
-    <Compile Include="Model\MethodParameter.cs" />
-    <Compile Include="Model\Resource.cs" />
-    <Compile Include="Model\Link.cs" />
-    <Compile Include="Model\Property.cs" />
+    <Compile Include="ResourceModel\MethodParameter.cs" />
+    <Compile Include="ResourceModel\Resource.cs" />
+    <Compile Include="RepresentationModel\Link.cs" />
+    <Compile Include="RepresentationModel\Property.cs" />
     <Compile Include="AppendExtension.cs" />
     <Compile Include="Rel.cs" />
     <Compile Include="Rels.cs" />
     <Compile Include="Representor.cs" />
-    <Compile Include="Model\MethodArguments.cs" />
+    <Compile Include="ResourceModel\MethodArguments.cs" />
     <Compile Include="RequestHandling\BindModel.cs" />
     <Compile Include="RequestHandling\ModelBindingFailed.cs" />
     <Compile Include="RequestHandling\Request.cs" />

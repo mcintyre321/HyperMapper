@@ -8,18 +8,19 @@ namespace HyperMapper.Examples.TaskList.Domain
 {
     public class Board : Node<Boards>
     {
-        public Board(Boards parent, string key) : base(parent, key) { }
+        public Board(Boards parent, string key, string title) : base(parent, key, title) { }
 
         List<Card> _cards = new List<Card>();
         public IEnumerable<Card> Cards => _cards;
 
         [Expose]
-        public string Title { get; set; }
+        public string Description { get; set; }
+        
 
         [Expose]
-        public void AddCard(string description, [Inject] IdGenerator guid)
+        public void AddCard(string title, string description, [Inject] IdGenerator guid)
         {
-            var item = new Card(this, guid()) { Description = description };
+            var item = new Card(this, guid(), title) { Description = description };
             this._cards.Add(item);
             this.AddChild(item);
 

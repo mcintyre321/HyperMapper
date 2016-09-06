@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using HyperMapper.Model;
+using HyperMapper.ResourceModel;
 using OneOf;
 
 namespace HyperMapper.RequestHandling
@@ -20,7 +20,7 @@ namespace HyperMapper.RequestHandling
                     .Where(p => !String.IsNullOrEmpty(p));
 
                 var target = parts
-                    .Aggregate((OneOf<Resource, None>) root,
+                    .Aggregate((OneOf<Resource, OneOf.Types.None>) root,
                         (x, part) => x.Match(
                             childEntity => childEntity.GetChildByUriSegment(part),
                             none => none)
@@ -37,8 +37,9 @@ namespace HyperMapper.RequestHandling
                                     failed => Task.FromResult<Response>(new Response.ModelBindingFailedResponse()),
                                     async boundModel => (await handler.Invoke(boundModel)).Match(
                                         representation =>
-                                            new Response.RepresentationResponse(representation.Representation)
+                                            (Response)new Response.RepresentationResponse(representation.Representation)
                                         ));
+                                    
                                 return response;
                             },
                             none => Task.FromResult((Response) new Response.MethodNotAllowed())),
