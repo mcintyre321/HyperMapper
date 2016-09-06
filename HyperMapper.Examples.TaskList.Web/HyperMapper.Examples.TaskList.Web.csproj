@@ -65,7 +65,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="OneOf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OneOf.2.0.21\lib\portable45-net45+win8+wp8+wpa81\OneOf.dll</HintPath>
+      <HintPath>..\packages\OneOf.2.0.23\lib\portable45-net45+win8+wp8+wpa81\OneOf.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">

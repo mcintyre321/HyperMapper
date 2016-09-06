@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Owin", "HyperMa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Examples.TaskList.OwinApp", "HyperMapper.Examples.TaskList.OwinApp\HyperMapper.Examples.TaskList.OwinApp.csproj", "{731ECC82-922C-4CA2-85A6-6F2E8125A5CD}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper", "Hypermapper\HyperMapper.csproj", "{410E2F8D-4641-4F94-867C-AAE2768C75BD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Examples.TaskList.ResourceModel", "HyperMapper.Examples.TaskList.ResourceModel\HyperMapper.Examples.TaskList.ResourceModel.csproj", "{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6}"
@@ -29,10 +27,6 @@ Global
 		{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AC0CFF9-6D73-42CF-A8AC-CC087FE9F322}.Release|Any CPU.Build.0 = Release|Any CPU
-		{731ECC82-922C-4CA2-85A6-6F2E8125A5CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{731ECC82-922C-4CA2-85A6-6F2E8125A5CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{731ECC82-922C-4CA2-85A6-6F2E8125A5CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{731ECC82-922C-4CA2-85A6-6F2E8125A5CD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{410E2F8D-4641-4F94-867C-AAE2768C75BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{410E2F8D-4641-4F94-867C-AAE2768C75BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{410E2F8D-4641-4F94-867C-AAE2768C75BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -58,7 +52,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{731ECC82-922C-4CA2-85A6-6F2E8125A5CD} = {E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}
 		{24743E70-7A8C-4D91-8EC5-E2C5DA4685B6} = {E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}
 		{D4501B25-2E89-4C78-9D83-639D56CE6D2D} = {E47CCB75-4A2B-4F6F-8168-2A1D32AACE39}
 	EndGlobalSection
