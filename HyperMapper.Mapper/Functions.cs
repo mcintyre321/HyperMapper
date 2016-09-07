@@ -266,7 +266,13 @@ namespace HyperMapper.Mapper
                     await task;
                     result = task.GetType().GetRuntimeProperty("Result")?.GetValue(task) ?? result;
                 }
+
                 var resourceElements = BuildResourceElementsFromMethodInfo(methodInfo, uri, parentNodeAndUri);
+                var node = result as INode;
+                if (node != null)
+                {
+                    resourceElements.Add(new Link("Created " + node.Title, new Rel[0],  new Uri(parentNodeAndUri.Item2, "./" + node.Key)));
+                }
                 var representation = new Representation(new Class[0], methodInfo.Name, uri, resourceElements);
                 return new InvokeResult.RepresentationResult(representation);
             };
