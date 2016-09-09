@@ -50,7 +50,7 @@ namespace HyperMapper.Mapper
 
             if (node.Parent != null)
             {
-                links = links.Concat(new[] {new Link("parent", new Rel[] {new Rel("parent"),}, parentNodeAndUri.Item2)
+                links = links.Concat(new[] {new Link(parentNodeAndUri.Item1.Title, new Rel[] {new Rel("parent"),}, parentNodeAndUri.Item2)
                 });
             }
 
