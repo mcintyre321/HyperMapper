@@ -22,77 +22,87 @@ namespace HyperMapper.Mapper
             public Uri propertyUri { get; set; }
         }
 
-        public static Resource MakeResourceFromNode(Tuple<INode,Uri> nodeAndUri, Tuple<INode, Uri> parentNodeAndUri, Func<Type, object> serviceLocator)
+        public static Resource MakeResourceFromNode(INode nodeAndUri, Func<Type, object> serviceLocator)
         {
+            var methodNode = nodeAndUri as MethodInfoNode;
 
-            var type = nodeAndUri.Item1.GetType().GetTypeInfo();
-            var nodeUri = nodeAndUri.Item2;
-            var node = nodeAndUri.Item1;
-            //var linkedChildResources = GetLinksFromTypeProperties(node, nodeUri, serviceLocator, type);
-            var linkedActionResources = Functions.GetLinksFromTypeMethods(type, nodeUri, node, serviceLocator, nodeAndUri);
-
-
-
-            var childLinks =
-                node.ChildKeys.Select(node.GetChild)
-                    .Select(
-                        c =>
-                        {
-                            var uri = new Uri(nodeUri.ToString().TrimEnd('/') + "/" + c.Key, UriKind.Relative);
-                            return new Link(c.Title.ToString(), new Rel[] {new Rel("child"),}, uri)
-                            {
-                                Follow = () => MakeResourceFromNode(Tuple.Create(c, uri),nodeAndUri, serviceLocator)
-                            };
-                        });
-
-            var links = //linkedChildResources.Concat
-                (linkedActionResources).Concat(childLinks);
-
-            if (node.Parent != null)
+            if (methodNode != null)
             {
-                links = links.Concat(new[] {new Link(parentNodeAndUri.Item1.Title, new Rel[] {new Rel("parent"),}, parentNodeAndUri.Item2)
-                });
+                return BuildFromMethodInfo(methodNode, serviceLocator);
             }
-
-
-            var methodHandlers = new[]
+            else
             {
-                new MethodHandler(new Method.Get(), new MethodParameter[0], arguments =>
+                var type = nodeAndUri.GetType().GetTypeInfo();
+                var nodeUri = nodeAndUri.Uri;
+                var node = nodeAndUri;
+                //var linkedChildResources = GetLinksFromTypeProperties(node, nodeUri, serviceLocator, type);
+                //var linkedActionResources = Functions.GetLinksFromTypeMethods(type, nodeUri, node, serviceLocator,
+                //    nodeAndUri);
+
+                var childLinks =
+                    node.ChildKeys.Select(node.GetChild)
+                        .Select(
+                            c =>
+                            {
+                                var uri = UriHelper.Combine(nodeUri, c.Key.ToString());
+                                return new Link(c.Title.ToString(), new Rel[] {new Rel("child"),}, uri)
+                                {
+                                    Follow = () => MakeResourceFromNode(c, serviceLocator)
+                                };
+                            });
+
+                var links = childLinks;
+
+                if (node.Parent != null)
                 {
-                    var oneOfs = new List<OneOf<Link, Property, Operation>>();
-                    foreach (var link in links)
+
+                    links = links.Concat(new[]
                     {
-                        oneOfs.Add(link);
-                    }
+                        new Link(node.Parent.Title, new Rel[] {new Rel("parent"),}, node.Parent.Uri)
+                    });
+                }
 
-                    var properties = MarkedUpProperties(nodeUri, type)
-                        .Where(IsSimpleProperty)
-                        .Select(x => new Property(x.propertyInfo.Name, JToken.FromObject(x.propertyInfo.GetValue(node))));
 
-                    foreach (var property in properties)
+                var methodHandlers = new[]
+                {
+                    new MethodHandler(new Method.Get(), new MethodParameter[0], arguments =>
                     {
-                        oneOfs.Add(property);
-                    }
+                        var oneOfs = new List<OneOf<Link, Property, Operation>>();
+                        foreach (var link in links)
+                        {
+                            oneOfs.Add(link);
+                        }
 
-                    var representation = new Representation(new Class[0], node.Title, nodeUri, oneOfs);
+                        var properties = MarkedUpProperties(nodeUri, type)
+                            .Where(IsSimpleProperty)
+                            .Select(
+                                x => new Property(x.propertyInfo.Name, JToken.FromObject(x.propertyInfo.GetValue(node))));
 
-                    return Task.FromResult<InvokeResult>(new InvokeResult.RepresentationResult(representation));
-                })
-            };
+                        foreach (var property in properties)
+                        {
+                            oneOfs.Add(property);
+                        }
+
+                        var representation = new Representation(new Class[0], node.Title, nodeUri, oneOfs);
+
+                        return Task.FromResult<InvokeResult>(new InvokeResult.RepresentationResult(representation));
+                    })
+                };
 
 
 
-            var entity = new Resource(node.Title, nodeUri, GetClasses(type).ToArray(), links.ToArray(), methodHandlers.ToArray());
+                var entity = new Resource(node.Title, nodeUri, GetClasses(type).ToArray(), methodHandlers.ToArray());
 
-            return entity;
+                return entity;
+            }
         }
- 
-        private static IEnumerable<Link> GetLinksFromTypeProperties(Tuple<INode, Uri> nodeAndUri,
+
+        private static IEnumerable<Link> GetLinksFromTypeProperties(INode nodeAndUri,
             Func<Type, object> serviceLocator,
             TypeInfo type)
         {
-            var nodeUri = nodeAndUri.Item2;
-            var node = nodeAndUri.Item1;
+            var nodeUri = nodeAndUri.Uri;
+            var node = nodeAndUri;
 
 
             var linkedChildResources = MarkedUpProperties(nodeUri, type)
@@ -123,7 +133,7 @@ namespace HyperMapper.Mapper
 
                         return new Link(x.propertyInfo.Name, rels.ToArray(), x.propertyUri)
                         {
-                            Follow = () => MakeResourceFromNode(Tuple.Create(value, x.propertyUri), nodeAndUri , serviceLocator)
+                            Follow = () => MakeResourceFromNode(value, serviceLocator)
                         };
                     }
                 });
@@ -137,7 +147,7 @@ namespace HyperMapper.Mapper
                 {
                     propertyInfo = propertyInfo,
                     att = propertyInfo.GetCustomAttribute<ExposeAttribute>(),
-                    propertyUri = new Uri((nodeUri.ToString().TrimEnd('/') + "/" + propertyInfo.Name), UriKind.Relative)
+                    propertyUri = UriHelper.Combine(nodeUri, propertyInfo.Name)
                 }).Where(x => x.att != null);
             return markedUp;
         }
@@ -158,24 +168,24 @@ namespace HyperMapper.Mapper
         }
 
 
-        static IEnumerable<Link> GetLinksFromTypeMethods(TypeInfo type, Uri nodeUri, object node, Func<Type, object> serviceLocator, Tuple<INode, Uri> parentNodeAndUri)
-        {
-            return type.DeclaredMethods.Where(x => x.GetCustomAttributes<ExposeAttribute>().Any())
-                .Select(methodInfo => new
-                {
-                    methodInfo,
-                    methodUri = new Uri((nodeUri.ToString() + "/" + methodInfo.Name), UriKind.Relative)
-                })
-                .Select(pair => new Link(
-                    pair.methodInfo.Name,
+        //static IEnumerable<Link> GetLinksFromTypeMethods(TypeInfo type, Uri nodeUri, object node, Func<Type, object> serviceLocator, INode parentNodeAndUri)
+        //{
+        //    return type.DeclaredMethods.Where(x => x.GetCustomAttributes<ExposeAttribute>().Any())
+        //        .Select(methodInfo => new
+        //        {
+        //            methodInfo,
+        //            methodUri = new Uri((nodeUri.ToString() + "/" + methodInfo.Name), UriKind.Relative)
+        //        })
+        //        .Select(pair => new Link(
+        //            pair.methodInfo.Name,
 
-                    new Rel[] {new Rel("operation"), new Rel(pair.methodInfo.Name)},
-                    pair.methodUri)
-                {
-                    Follow = () => BuildFromMethodInfo(node, pair.methodUri, pair.methodInfo, serviceLocator, parentNodeAndUri),
-                    Classes = new [] { "operation"}
-                });
-        }
+        //            new Rel[] {new Rel("operation"), new Rel(pair.methodInfo.Name)},
+        //            pair.methodUri)
+        //        {
+        //            Follow = () => BuildFromMethodInfo(node, pair.methodUri, pair.methodInfo, serviceLocator, parentNodeAndUri),
+        //            Classes = new [] { "operation"}
+        //        });
+        //}
 
         private static string[] GetClasses(TypeInfo type)
         {
@@ -189,37 +199,37 @@ namespace HyperMapper.Mapper
                 .Select(t => t.Name).ToArray();
         }
 
-        static Resource BuildFromMethodInfo(object o, Uri uri, MethodInfo methodInfo, Func<Type, object> serviceLocator, Tuple<INode, Uri> parentNodeAndUri)
+        static Resource BuildFromMethodInfo(MethodInfoNode node, Func<Type, object> serviceLocator)
         {
-            var resource = new Resource(methodInfo.Name, uri, new string[0], new List<Link>(), new[]
+            var resource = new Resource(node.Title, node.Uri, new string[0],   new[]
             {
-                BuildGetHandlerForMethodInfo(o, uri, methodInfo, parentNodeAndUri, serviceLocator),
-                BuildPostHandlerForMethodInfo(o, uri, methodInfo, serviceLocator, parentNodeAndUri)
+                BuildGetHandlerForMethodInfo(node, serviceLocator),
+                BuildPostHandlerForMethodInfo(node, serviceLocator)
             });
 
             return resource;
         }
 
-        private static MethodHandler BuildGetHandlerForMethodInfo(object o, Uri uri, MethodInfo methodInfo, Tuple<INode, Uri> parentNodeAndUri, Func<Type, object> serviceLocator)
+        private static MethodHandler BuildGetHandlerForMethodInfo(MethodInfoNode methodInfoNode, Func<Type, object> serviceLocator)
         {
             return new MethodHandler(new Method.Get(), new MethodParameter[0], tuples =>
             {
-                var oneOfs = BuildResourceElementsFromMethodInfo(methodInfo, uri, parentNodeAndUri);
-                var representation = new Representation(new Class[0], methodInfo.Name, uri, oneOfs );
+                var oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
+                var representation = new Representation(new Class[0], methodInfoNode.Title, methodInfoNode.Uri, oneOfs );
                 var representationResult = new InvokeResult.RepresentationResult(representation);
                 return Task.FromResult<InvokeResult>(representationResult);
             });
         }
 
-        private static List<OneOf<Link, Property, Operation>> BuildResourceElementsFromMethodInfo(MethodInfo methodInfo, Uri uri, Tuple<INode, Uri> parentNodeAndUri)
+        private static List<OneOf<Link, Property, Operation>> BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
         {
             var oneOfs = new List<OneOf<Link, Property, Operation>>();
-            oneOfs.Add(new Link(parentNodeAndUri.Item1.Title, new[] { new Rel("parent") }, parentNodeAndUri.Item2));
+            oneOfs.Add(new Link(methodInfoNode.Parent.Title, new[] { new Rel("parent") }, methodInfoNode.Parent.Uri));
             var methodParameters =
-                methodInfo.GetParameters()
+                methodInfoNode.MethodInfo.GetParameters()
                     .Where(pi => pi.GetCustomAttributes<InjectAttribute>().Any() == false)
                     .Select(pi => new MethodParameter(pi.Name, BuildFromParameterInfo(pi)));
-            var operation = new Operation(methodInfo.Name, methodParameters, uri);
+            var operation = new Operation(methodInfoNode.Title, methodParameters, methodInfoNode.Uri);
             oneOfs.Add(operation);
             return oneOfs;
         }
@@ -229,19 +239,19 @@ namespace HyperMapper.Mapper
             return MethodParameter.MethodParameterType.Text;
         }
 
-        private static MethodHandler BuildPostHandlerForMethodInfo(object o, Uri uri, MethodInfo methodInfo, Func<Type, object> serviceLocator, Tuple<INode, Uri> parentNodeAndUri)
+        private static MethodHandler BuildPostHandlerForMethodInfo(MethodInfoNode methodNode, Func<Type, object> serviceLocator)
         {
             MethodHandler.InvokeMethodDelegate invoke = async (submittedArgs) =>
             {
                 var argsEnumerator = submittedArgs.GetEnumerator();
-                var argsList = methodInfo.GetParameters()
+                var argsList = methodNode.MethodInfo.GetParameters()
                     .Select(pi =>
                     {
                         if (pi.GetCustomAttribute<InjectAttribute>() != null)
                         {
                             if (serviceLocator == null)
                             {
-                                throw new InvalidOperationException($"Cannot [Inject] parameter {pi.Name} for {methodInfo.DeclaringType.Name}.{methodInfo.Name} Please set ServiceLocator at startup");
+                                throw new InvalidOperationException($"Cannot [Inject] parameter {pi.Name} for {methodNode.MethodInfo.DeclaringType.Name}.{methodNode.MethodInfo.DeclaringType.Name} Please set ServiceLocator at startup");
                             }
                             return serviceLocator(pi.ParameterType);
                         }
@@ -256,8 +266,8 @@ namespace HyperMapper.Mapper
                         }
                     });
 
-                var result = methodInfo.Invoke(o, argsList.ToArray());
-                if (methodInfo.ReturnType == typeof(void))
+                var result = methodNode.MethodInfo.Invoke(methodNode.Parent, argsList.ToArray());
+                if (methodNode.MethodInfo.ReturnType == typeof(void))
                 {
                 }
                 var task = result as Task;
@@ -267,17 +277,17 @@ namespace HyperMapper.Mapper
                     result = task.GetType().GetRuntimeProperty("Result")?.GetValue(task) ?? result;
                 }
 
-                var resourceElements = BuildResourceElementsFromMethodInfo(methodInfo, uri, parentNodeAndUri);
+                var resourceElements = BuildResourceElementsFromMethodInfo(methodNode);
                 var node = result as INode;
                 if (node != null)
                 {
-                    resourceElements.Add(new Link("Created " + node.Title, new Rel[0],  new Uri(parentNodeAndUri.Item2, "./" + node.Key)));
+                    resourceElements.Add(new Link($"Created \'{node.Title}\'", new Rel[0], node.Uri));
                 }
-                var representation = new Representation(new Class[0], methodInfo.Name, uri, resourceElements);
+                var representation = new Representation(new Class[0], methodNode.Title, methodNode.Uri, resourceElements);
                 return new InvokeResult.RepresentationResult(representation);
             };
 
-            var parameterInfo = methodInfo.GetParameters()
+            var parameterInfo = methodNode.MethodInfo.GetParameters()
                 .Where(mi => mi.GetCustomAttribute<InjectAttribute>() == null)
                 .Select(pi => new MethodParameter(pi.Name, MethodParameter.MethodParameterType.Text)).ToArray();
 

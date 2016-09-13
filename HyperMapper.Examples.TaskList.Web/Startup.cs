@@ -8,8 +8,10 @@ using HyperMapper.Mapper;
 using HyperMapper.Mapping;
 using HyperMapper.Owin;
 using HyperMapper.RequestHandling;
+using HyperMapper.ResourceModel;
 using Microsoft.Owin;
 using Microsoft.Owin.FileSystems;
+using OneOf.Types;
 using Owin;
 
 [assembly: OwinStartup(typeof(HyperMapper.Examples.TaskList.Web.Startup))]
@@ -28,15 +30,19 @@ namespace HyperMapper.Examples.TaskList.Web
             };
 
 
-            var appRoot = BuildAppRoot();
-            app.UseHypermedia(() =>
-                Functions.MakeResourceFromNode(Tuple.Create((INode)appRoot, new Uri("/", UriKind.Relative)), null, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
+            var appRoot = BuildAppRoot(new Uri("/", UriKind.Relative));
+
+            
+
+            
+
+            app.UseHypermedia(() => Routing.RouteFromRootNode(appRoot, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
 
         }
 
-        private static AppRoot BuildAppRoot()
+        private static AppRoot BuildAppRoot(Uri uri)
         {
-            var appRoot = new AppRoot();
+            var appRoot = new AppRoot(uri);
             appRoot.Authentication.Register("testuser", "password");
             appRoot.Boards.AddBoard("My tasks", "Things I need to do", () => "board1");
             var board = appRoot.Boards.Items.Single(i => i.Key == "board1");

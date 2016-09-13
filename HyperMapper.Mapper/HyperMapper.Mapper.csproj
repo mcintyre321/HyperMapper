@@ -52,6 +52,8 @@
     <Compile Include="RelAttribute.cs" />
     <Compile Include="RootNode.cs" />
     <Compile Include="Functions.cs" />
+    <Compile Include="Routing.cs" />
+    <Compile Include="UriHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">

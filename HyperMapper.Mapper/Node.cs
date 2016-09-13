@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HyperMapper.Helpers;
+using HyperMapper.Mapper;
 
 namespace HyperMapper.Mapping
 {
@@ -12,27 +14,35 @@ namespace HyperMapper.Mapping
     [HyperMapper(UseTypeNameAsClassNameForEntity = false)]
     public class Node : INode
     {
-        readonly Dictionary<Key, INode> _children = new Dictionary<Key, INode>();
-        public INode Parent { get; }
-        public Key Key { get; }
-        public IEnumerable<Key> ChildKeys => _children.Keys;
-        public string Title { get; private set; }
+        public override Uri Uri => UriHelper.Combine(Parent.Uri, Key.ToString());
 
-        internal Node(string title)
+        readonly Dictionary<Key, INode> _children = new Dictionary<Key, INode>();
+        public override INode Parent { get; }
+        public override Key Key { get; }
+        public override IEnumerable<Key> ChildKeys => _children.Keys;
+        public override string Title { get; }
+
+        internal Node(string title) 
         {
             Title = title;
+            var methodNodes = this.GetType().GetRuntimeMethods()
+                .Where(mi => mi.GetCustomAttribute<ExposeAttribute>() != null)
+                .Select(rm => new MethodInfoNode(this, rm));
+            foreach (var methodNode in methodNodes)
+            {
+                this.AddChild(methodNode);
+            }
         }
 
-        internal Node(INode parent, Key key, string title)
+        internal Node(INode parent, Key key, string title) : this(title)
         {
             if (parent == null) throw new ArgumentException();
             if (key == null || parent.HasChild(key)) throw new ArgumentException();
             this.Parent = parent;
             this.Key = key;
-            Title = title;
         }
 
-        public virtual bool HasChild(Key key)
+        public override bool HasChild(Key key)
         {
             return _children.ContainsKey(key.ToString());
         }
@@ -44,7 +54,7 @@ namespace HyperMapper.Mapping
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public virtual INode GetChild(Key key)
+        public override INode GetChild(Key key)
         {
             INode node = null;
             if (_children.TryGetValue(key, out node)) return node;
@@ -71,6 +81,29 @@ namespace HyperMapper.Mapping
             _children.Add(node.Key.ToString(), node);
             return node;
         }
+    }
+
+    internal class MethodInfoNode : INode
+    {
+        public MethodInfoNode(INode parent, MethodInfo mi)
+        {
+            Parent = parent;
+            Key = new Key(mi.Name);
+            Title = mi.Name;
+            MethodInfo = mi;
+        }
+
+        public override INode Parent { get; }
+        public override Key Key { get; }
+        public override IEnumerable<Key> ChildKeys { get; } = new Key[0];
+        public override string Title { get; }
+        public override bool HasChild(Key key) => false;
+
+        public override INode GetChild(Key key) => null;
+
+        public override Uri Uri => UriHelper.Combine(Parent.Uri, Key.ToString());
+
+        public MethodInfo MethodInfo { get; }
     }
 
     [HyperMapper(UseTypeNameAsClassNameForEntity = false)]

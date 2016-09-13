@@ -1,14 +1,16 @@
+using System;
 using System.Collections.Generic;
 
 namespace HyperMapper.Mapping
 {
-    public interface INode
+    public abstract class INode
     {
-        INode Parent { get; }
-        Key Key { get; }
-        IEnumerable<Key> ChildKeys { get;  }
-        string Title { get; }
-        bool HasChild(Key key);
-        INode GetChild(Key key);
+        public abstract INode Parent { get; }
+        public abstract Key Key { get; }
+        public abstract IEnumerable<Key> ChildKeys { get; }
+        public abstract string Title { get; }
+        public abstract bool HasChild(Key key);
+        public abstract INode GetChild(Key key);
+        public abstract Uri Uri { get; }
     }
 }

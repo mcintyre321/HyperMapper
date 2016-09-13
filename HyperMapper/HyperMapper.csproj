@@ -35,7 +35,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
-    <Compile Include="Title.cs" />
     <Compile Include="RepresentationModel\Class.cs" />
     <Compile Include="RepresentationModel\Operation.cs" />
     <Compile Include="ResourceModel\InvokeResult.cs" />
