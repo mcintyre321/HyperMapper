@@ -5,12 +5,13 @@ using HyperMapper;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 using HyperMapper.Mapping;
 using HyperMapper.Mapping.ActionResults;
+using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {
     public class Authentication : Node<AppRoot>
     {
-        public Authentication(AppRoot parent, Key key) : base(parent, key, nameof(Authentication)) { }
+        public Authentication(AppRoot parent, Key key) : base(parent, key, nameof(Authentication), TermFactory.From<Authentication>()) { }
         [Expose]
         public OneOf.OneOf<OK, UserError> Register(string username, string password)
         {

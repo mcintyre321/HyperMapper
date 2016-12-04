@@ -2,12 +2,13 @@ using System.Collections.Generic;
 using HyperMapper;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 using HyperMapper.Mapping;
+using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {
     public class Boards : Node<AppRoot>
     {
-        public Boards(AppRoot parent, Key key) : base(parent, key, nameof(Boards)) { }
+        public Boards(AppRoot parent, Key key) : base(parent, key, nameof(Boards), TermFactory.From<Boards>()) { }
 
         List<Board> _boards = new List<Board>();
         [Expose]

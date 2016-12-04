@@ -2,18 +2,16 @@ using System;
 using System.Collections.Generic;
 using HyperMapper.ResourceModel;
 
-namespace HyperMapper.RepresentationModel
+namespace HyperMapper.RepresentationModel.Vocab
 {
-    public class Operation
+    public class Operation : Property
     {
         public IEnumerable<MethodParameter> Parameters { get; set; }
         public Uri Uri { get; private set; }
-        public string Name { get; private set; }
 
 
-        public Operation(string name, IEnumerable<MethodParameter> parameters, Uri uri)
+        public Operation(string name, IEnumerable<MethodParameter> parameters, Uri uri, Term[] terms) : base(name, terms)
         {
-            Name = name;
             Parameters = parameters;
             Uri = uri;
         }

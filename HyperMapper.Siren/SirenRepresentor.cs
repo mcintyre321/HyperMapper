@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using HyperMapper.RepresentationModel;
+using HyperMapper.RepresentationModel.Vocab;
 using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
 using Newtonsoft.Json;
@@ -12,7 +13,7 @@ using Newtonsoft.Json.Serialization;
 using OneOf;
 using SirenDotNet;
 using Action = SirenDotNet.Action;
-using Link = HyperMapper.RepresentationModel.Link;
+using Link = HyperMapper.RepresentationModel.Vocab.Link;
 
 namespace HyperMapper.Siren
 {
@@ -65,88 +66,95 @@ namespace HyperMapper.Siren
             var subEntities = new List<SubEntity>();
 
             var properties = new JObject();
-           
+
+            string sirenTitle = null;
+
             {
 
                 foreach (var pair in representation.Children)
                 {
-                    pair.Switch(
-                        //    subEntity =>
+                    if (pair is Link)
+                    {
+                        var link = (Link) pair;
+                        //if (link.Classes?.Contains("operation") ?? false)
                         //{
-                        //    subEntities.Add(BuildSubEntityFromHypermedia(subEntity));
-                        //},
-                        //subEntityRef =>
-                        //{
-                        //    var item = MapSubEntityLink(subEntityRef);
-                        //    subEntities.Add(item);
-                        //}, 
-                        //action =>
-                        //{
-                        //    var item = MapAction(action);
-                        //    actions.Add(item);
-                        //}, 
-                        link =>
+                        //    var operationResource = link.Follow();
+
+                        //    var posttHandler = operationResource.GetMethodHandler(new Method.Post()).AsT0;
+
+                        //    var action = new SirenDotNet.Action(link.Text, link.Uri)
+                        //    {
+                        //        Class = link.Classes,
+                        //        Method = HttpVerbs.POST,
+                        //        Fields = posttHandler.Parameters.Select(mp => new Field()
+                        //        {
+                        //            Name = mp.Key.ToString(),
+                        //            Type = LookupFieldType(mp.Type)
+                        //        })
+                        //    };
+                        //    actions.Add(action);
+                        //}
+                        //else
                         {
-                            if (link.Classes?.Contains("operation") ?? false)
+                            links.Add(new SirenDotNet.Link(link.Uri, RelsFromTerm(link.Terms))
                             {
-                                var operationResource = link.Follow();
-
-                                var posttHandler = operationResource.GetMethodHandler(new Method.Post()).AsT0;
-
-                                var action = new SirenDotNet.Action(link.Text, link.Uri)
-                                {
-                                    Class = link.Classes,
-                                    Method = HttpVerbs.POST,
-                                    Fields = posttHandler.Parameters.Select(mp => new Field()
-                                    {
-                                        Name = mp.Key.ToString(),
-                                        Type = LookupFieldType(mp.Type)
-                                    })
-                                };
-                                actions.Add(action);
-                            }
-                            else
+                                Title = link.Name,
+                            });
+                        }
+                    }
+                    else if (pair is Operation)
+                    {
+                        var operation = (Operation) pair;
+                        {
+                            var action = new SirenDotNet.Action(operation.Name, operation.Uri)
                             {
-                                links.Add(new SirenDotNet.Link(link.Uri, link.Rels.Select(r => r.ToString()).ToArray())
+                                Method = HttpVerbs.POST,
+                                Fields = operation.Parameters.Select(mp => new Field()
                                 {
-                                    Title = link.Text,
-                                });
-                            }
-                        },
-                        property =>
+                                    Name = mp.Key.ToString(),
+                                    Type = LookupFieldType(mp.Type)
+                                })
+                            };
+                            actions.Add(action);
+                        }
+                    }
+                    else
+                    {
+                        var property = (ValueProperty) pair;
+                        var isTitle = property.Terms.Contains(Term.Title);
+                        if (isTitle)
+                        {
+                            sirenTitle = property.Value.ToObject<string>();
+                        }
+                        else
                         {
                             properties[property.Name.ToString()] = property.Value;
-                        },
-                        operation =>
-                        {
-                            {
-                                 
-
-                                var action = new SirenDotNet.Action(operation.Name, operation.Uri)
-                                {
-                                    Method = HttpVerbs.POST,
-                                    Fields = operation.Parameters.Select(mp => new Field()
-                                    {
-                                        Name = mp.Key.ToString(),
-                                        Type = LookupFieldType(mp.Type)
-                                    })
-                                };
-                                actions.Add(action);
-                            }
-                        });
+                        }
+                    }
                 }
+            }
+
+
+            if (sirenTitle == null)
+            {
+                throw new Exception("Title cannot be null for siren, attach a Term.Title property");
             }
 
             var entity = new SirenDotNet.Entity
             {
-                Title = representation.Title,
-                Class = representation.Class?.Select(c => c.ToString()),
+                Title = sirenTitle,
+                //Class = representation.Class?.Select(c => c.ToString()),
                 Links = links.Any() ? links : null,
                 Actions = actions.Any() ? actions : null,
                 Entities = subEntities.Any() ? subEntities : null,
                 Properties = properties.HasValues ? properties : null
             };
             return entity;
+        }
+
+        private string[] RelsFromTerm(Term[] terms)
+        {
+            return terms.Select(t => t.ToString()).ToArray();
         }
 
         private FieldTypes LookupFieldType(MethodParameter.MethodParameterType type)

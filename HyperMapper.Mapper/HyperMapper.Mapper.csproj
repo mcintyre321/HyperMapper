@@ -49,7 +49,6 @@
     <Compile Include="INode.cs" />
     <Compile Include="Node.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RelAttribute.cs" />
     <Compile Include="RootNode.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Routing.cs" />

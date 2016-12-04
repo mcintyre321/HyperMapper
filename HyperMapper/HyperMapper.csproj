@@ -35,8 +35,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
-    <Compile Include="RepresentationModel\Class.cs" />
-    <Compile Include="RepresentationModel\Operation.cs" />
+    <Compile Include="RepresentationModel\Vocab\ValueProperty.cs" />
+    <Compile Include="RepresentationModel\Vocab\Operation.cs" />
+    <Compile Include="RepresentationModel\Term.cs" />
     <Compile Include="ResourceModel\InvokeResult.cs" />
     <Compile Include="ResourceModel\Method.cs" />
     <Compile Include="ResourceModel\MethodHandler.cs" />
@@ -46,11 +47,9 @@
     <Compile Include="Key.cs" />
     <Compile Include="ResourceModel\MethodParameter.cs" />
     <Compile Include="ResourceModel\Resource.cs" />
-    <Compile Include="RepresentationModel\Link.cs" />
+    <Compile Include="RepresentationModel\Vocab\Link.cs" />
     <Compile Include="RepresentationModel\Property.cs" />
     <Compile Include="AppendExtension.cs" />
-    <Compile Include="Rel.cs" />
-    <Compile Include="Rels.cs" />
     <Compile Include="Representor.cs" />
     <Compile Include="ResourceModel\MethodArguments.cs" />
     <Compile Include="RequestHandling\BindModel.cs" />

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Mapping
 {
@@ -12,5 +13,6 @@ namespace HyperMapper.Mapping
         public abstract bool HasChild(Key key);
         public abstract INode GetChild(Key key);
         public abstract Uri Uri { get; }
+        public abstract Term[] Terms { get; }
     }
 }

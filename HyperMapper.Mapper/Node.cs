@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using HyperMapper.Helpers;
 using HyperMapper.Mapper;
+using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Mapping
 {
@@ -15,6 +16,7 @@ namespace HyperMapper.Mapping
     public class Node : INode
     {
         public override Uri Uri => UriHelper.Combine(Parent.Uri, Key.ToString());
+        public override Term[] Terms { get; }
 
         readonly Dictionary<Key, INode> _children = new Dictionary<Key, INode>();
         public override INode Parent { get; }
@@ -22,9 +24,10 @@ namespace HyperMapper.Mapping
         public override IEnumerable<Key> ChildKeys => _children.Keys;
         public override string Title { get; }
 
-        internal Node(string title) 
+        protected Node(string title, Term[] terms) 
         {
             Title = title;
+            Terms = terms;
             var methodNodes = this.GetType().GetRuntimeMethods()
                 .Where(mi => mi.GetCustomAttribute<ExposeAttribute>() != null)
                 .Select(rm => new MethodInfoNode(this, rm));
@@ -34,7 +37,7 @@ namespace HyperMapper.Mapping
             }
         }
 
-        internal Node(INode parent, Key key, string title) : this(title)
+        internal Node(INode parent, Key key, string title, Term[] terms) : this(title, terms)
         {
             if (parent == null) throw new ArgumentException();
             if (key == null || parent.HasChild(key)) throw new ArgumentException();
@@ -102,6 +105,7 @@ namespace HyperMapper.Mapping
         public override INode GetChild(Key key) => null;
 
         public override Uri Uri => UriHelper.Combine(Parent.Uri, Key.ToString());
+        public override Term[] Terms => TermFactory.From(MethodInfo);
 
         public MethodInfo MethodInfo { get; }
     }
@@ -110,7 +114,7 @@ namespace HyperMapper.Mapping
     public class Node<TParent> : Node where TParent : Node
     {
         public new TParent Parent { get; }
-        protected Node(TParent parent, Key key, string title) : base(parent, key, title)
+        protected Node(TParent parent, Key key, string title, Term[] terms) : base(parent, key, title, terms)
         {
             this.Parent = parent;
         }

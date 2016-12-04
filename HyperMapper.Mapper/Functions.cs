@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using HyperMapper.Helpers;
 using HyperMapper.Mapping;
 using HyperMapper.RepresentationModel;
+using HyperMapper.RepresentationModel.Vocab;
 using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
 using Newtonsoft.Json.Linq;
@@ -45,7 +46,8 @@ namespace HyperMapper.Mapper
                             c =>
                             {
                                 var uri = UriHelper.Combine(nodeUri, c.Key.ToString());
-                                return new Link(c.Title.ToString(), new Rel[] {new Rel("child"),}, uri)
+                                var term = Term.Child;
+                                return new Link(c.Title.ToString(),  uri, term)
                                 {
                                     Follow = () => MakeResourceFromNode(c, serviceLocator)
                                 };
@@ -55,10 +57,9 @@ namespace HyperMapper.Mapper
 
                 if (node.Parent != null)
                 {
-
                     links = links.Concat(new[]
                     {
-                        new Link(node.Parent.Title, new Rel[] {new Rel("parent"),}, node.Parent.Uri)
+                        new Link(node.Parent.Title, node.Parent.Uri, Term.Parent)
                     });
                 }
 
@@ -67,7 +68,7 @@ namespace HyperMapper.Mapper
                 {
                     new MethodHandler(new Method.Get(), new MethodParameter[0], arguments =>
                     {
-                        var oneOfs = new List<OneOf<Link, Property, Operation>>();
+                        var oneOfs = new List<Property>();
                         foreach (var link in links)
                         {
                             oneOfs.Add(link);
@@ -76,14 +77,17 @@ namespace HyperMapper.Mapper
                         var properties = MarkedUpProperties(nodeUri, type)
                             .Where(IsSimpleProperty)
                             .Select(
-                                x => new Property(x.propertyInfo.Name, JToken.FromObject(x.propertyInfo.GetValue(node))));
+                                x =>
+                                    new ValueProperty(x.propertyInfo.Name,
+                                        JToken.FromObject(x.propertyInfo.GetValue(node)), TermFactory.From(x.propertyInfo)));
 
                         foreach (var property in properties)
                         {
                             oneOfs.Add(property);
                         }
+                        oneOfs.Add(new ValueProperty("title", JToken.FromObject(node.Title), Term.Title));
 
-                        var representation = new Representation(new Class[0], node.Title, nodeUri, oneOfs);
+                        var representation = new Representation(nodeUri, oneOfs);
 
                         return Task.FromResult<InvokeResult>(new InvokeResult.RepresentationResult(representation));
                     })
@@ -123,15 +127,15 @@ namespace HyperMapper.Mapper
                     //else
                     {
                         var value = (INode) x.propertyInfo.GetValue(node);
-                        var rels = x.propertyInfo.GetCustomAttributes<RelAttribute>()
-                            .Select(ra => new Rel(ra.RelString));
+                        //var rels = x.propertyInfo.GetCustomAttributes<RelAttribute>()
+                        //    .Select(ra => Term(ra.RelString));
 
-                        if (IsChildUri(nodeUri, x.propertyUri))
-                        {
-                            rels = rels.Append(new Rel("child"));
-                        }
+                        //if (IsChildUri(nodeUri, x.propertyUri))
+                        //{
+                        //    rels = rels.Append(new Term("child"));
+                        //}
 
-                        return new Link(x.propertyInfo.Name, rels.ToArray(), x.propertyUri)
+                        return new Link(x.propertyInfo.Name, x.propertyUri, TermFactory.From(x.propertyInfo))
                         {
                             Follow = () => MakeResourceFromNode(value, serviceLocator)
                         };
@@ -203,33 +207,35 @@ namespace HyperMapper.Mapper
         {
             var resource = new Resource(node.Title, node.Uri, new string[0],   new[]
             {
-                BuildGetHandlerForMethodInfo(node, serviceLocator),
+                BuildGetHandlerForMethodInfo(node),
                 BuildPostHandlerForMethodInfo(node, serviceLocator)
             });
 
             return resource;
         }
 
-        private static MethodHandler BuildGetHandlerForMethodInfo(MethodInfoNode methodInfoNode, Func<Type, object> serviceLocator)
+        private static MethodHandler BuildGetHandlerForMethodInfo(MethodInfoNode methodInfoNode)
         {
             return new MethodHandler(new Method.Get(), new MethodParameter[0], tuples =>
             {
                 var oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
-                var representation = new Representation(new Class[0], methodInfoNode.Title, methodInfoNode.Uri, oneOfs );
+                oneOfs.Add(new ValueProperty("title", JToken.FromObject(methodInfoNode.Title), Term.Title));
+                var representation = new Representation(methodInfoNode.Uri, oneOfs);
                 var representationResult = new InvokeResult.RepresentationResult(representation);
                 return Task.FromResult<InvokeResult>(representationResult);
             });
         }
 
-        private static List<OneOf<Link, Property, Operation>> BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
+        private static List<Property> BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
         {
-            var oneOfs = new List<OneOf<Link, Property, Operation>>();
-            oneOfs.Add(new Link(methodInfoNode.Parent.Title, new[] { new Rel("parent") }, methodInfoNode.Parent.Uri));
+            var oneOfs = new List<Property>();
+            oneOfs.Add(new Link(methodInfoNode.Parent.Title, methodInfoNode.Parent.Uri, Term.Parent));
             var methodParameters =
                 methodInfoNode.MethodInfo.GetParameters()
                     .Where(pi => pi.GetCustomAttributes<InjectAttribute>().Any() == false)
                     .Select(pi => new MethodParameter(pi.Name, BuildFromParameterInfo(pi)));
-            var operation = new Operation(methodInfoNode.Title, methodParameters, methodInfoNode.Uri);
+            var term = TermFactory.From(methodInfoNode.MethodInfo);
+            var operation = new Operation(methodInfoNode.Title, methodParameters, methodInfoNode.Uri, term);
             oneOfs.Add(operation);
             return oneOfs;
         }
@@ -281,9 +287,10 @@ namespace HyperMapper.Mapper
                 var node = result as INode;
                 if (node != null)
                 {
-                    resourceElements.Add(new Link($"Created \'{node.Title}\'", new Rel[0], node.Uri));
+                    resourceElements.Add(new Link($"Created \'{node.Title}\'", node.Uri, node.Terms));
                 }
-                var representation = new Representation(new Class[0], methodNode.Title, methodNode.Uri, resourceElements);
+                resourceElements.Add(new ValueProperty("title", JToken.FromObject(methodNode.Title), Term.Title));
+                var representation = new Representation(methodNode.Uri, resourceElements);
                 return new InvokeResult.RepresentationResult(representation);
             };
 

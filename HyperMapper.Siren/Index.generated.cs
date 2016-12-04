@@ -38,7 +38,7 @@ WriteLiteral(@"<!DOCTYPE html>
     <script src=""//cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-with-addons.js"" type=""text/javascript""></script>
     <script src=""//cdnjs.cloudflare.com/ajax/libs/react/15.0.1/react-dom.js"" type=""text/javascript""></script>
     <script src=""//cdn.jsdelivr.net/form2js/2.0/form2js.min.js"" type=""text/javascript""></script>
-    <script src=""/Siren.js""></script>
+    <script src=""/Content/Siren.js""></script>
 </head>
 <body>
 

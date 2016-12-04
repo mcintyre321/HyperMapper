@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using HyperMapper;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 using HyperMapper.Mapping;
+using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {
     public class Board : Node<Boards>
     {
-        public Board(Boards parent, string key, string title) : base(parent, key, title) { }
+        public Board(Boards parent, string key, string title) : base(parent, key, title, TermFactory.From<Board>()) { }
 
         List<Card> _cards = new List<Card>();
         public IEnumerable<Card> Cards => _cards;

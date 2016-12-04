@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HyperMapper.RepresentationModel;
+using HyperMapper.RepresentationModel.Vocab;
 using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
 using Microsoft.Owin;
+using Newtonsoft.Json.Linq;
 using OneOf;
 
 namespace HyperMapper.Owin
@@ -44,7 +46,11 @@ namespace HyperMapper.Owin
                 },
                 async createdResponse =>
                 {
-                    await ResponseWriter.Write(ctx, createdResponse.Uri, new Representation(new Class[0] { }, "CREATED", ctx.Request.Uri, new OneOf<Link, Property, Operation>[0]), settings);
+                    var properties = new Property[]
+                    {
+                        //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term[] {new Term("ResultMessage"), }), 
+                    };
+                    await ResponseWriter.Write(ctx, createdResponse.Uri, new Representation(ctx.Request.Uri, properties), settings);
                     return true;
                 });
             
