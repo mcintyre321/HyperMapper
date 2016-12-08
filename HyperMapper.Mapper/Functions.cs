@@ -23,7 +23,7 @@ namespace HyperMapper.Mapper
             public Uri propertyUri { get; set; }
         }
 
-        public static Resource MakeResourceFromNode(INode nodeAndUri, Func<Type, object> serviceLocator)
+        public static Resource MakeResourceFromNode(INode nodeAndUri, ServiceLocatorDelegate serviceLocator)
         {
             var methodNode = nodeAndUri as MethodInfoNode;
 
@@ -68,7 +68,7 @@ namespace HyperMapper.Mapper
                 {
                     new MethodHandler(new Method.Get(), new MethodParameter[0], arguments =>
                     {
-                        var oneOfs = new List<Property>();
+                        var oneOfs = new PropertyList();
                         foreach (var link in links)
                         {
                             oneOfs.Add(link);
@@ -102,7 +102,7 @@ namespace HyperMapper.Mapper
         }
 
         private static IEnumerable<Link> GetLinksFromTypeProperties(INode nodeAndUri,
-            Func<Type, object> serviceLocator,
+            ServiceLocatorDelegate serviceLocator,
             TypeInfo type)
         {
             var nodeUri = nodeAndUri.Uri;
@@ -203,7 +203,7 @@ namespace HyperMapper.Mapper
                 .Select(t => t.Name).ToArray();
         }
 
-        static Resource BuildFromMethodInfo(MethodInfoNode node, Func<Type, object> serviceLocator)
+        static Resource BuildFromMethodInfo(MethodInfoNode node, ServiceLocatorDelegate serviceLocator)
         {
             var resource = new Resource(node.Title, node.Uri, new string[0],   new[]
             {
@@ -218,7 +218,7 @@ namespace HyperMapper.Mapper
         {
             return new MethodHandler(new Method.Get(), new MethodParameter[0], tuples =>
             {
-                var oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
+                PropertyList oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
                 oneOfs.Add(new ValueProperty("title", JToken.FromObject(methodInfoNode.Title), Term.Title));
                 var representation = new Representation(methodInfoNode.Uri, oneOfs);
                 var representationResult = new InvokeResult.RepresentationResult(representation);
@@ -226,9 +226,9 @@ namespace HyperMapper.Mapper
             });
         }
 
-        private static List<Property> BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
+        private static PropertyList BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
         {
-            var oneOfs = new List<Property>();
+            var oneOfs = new PropertyList ();
             oneOfs.Add(new Link(methodInfoNode.Parent.Title, methodInfoNode.Parent.Uri, Term.Parent));
             var methodParameters =
                 methodInfoNode.MethodInfo.GetParameters()
@@ -245,7 +245,7 @@ namespace HyperMapper.Mapper
             return MethodParameter.MethodParameterType.Text;
         }
 
-        private static MethodHandler BuildPostHandlerForMethodInfo(MethodInfoNode methodNode, Func<Type, object> serviceLocator)
+        private static MethodHandler BuildPostHandlerForMethodInfo(MethodInfoNode methodNode, ServiceLocatorDelegate serviceLocator)
         {
             MethodHandler.InvokeMethodDelegate invoke = async (submittedArgs) =>
             {
@@ -268,11 +268,17 @@ namespace HyperMapper.Mapper
                             if (current.Item1 != new Key(pi.Name))
                                 throw new ArgumentException("Mismatch: expected " + pi.Name + ", received" +
                                                             current.Item1.ToString());
-                            return current.Item2;
+                            return Tuple.Create(current.Item2, null as Action);
                         }
-                    });
+                    }).ToList();
 
-                var result = methodNode.MethodInfo.Invoke(methodNode.Parent, argsList.ToArray());
+                var parameters = argsList.Select(a => a.Item1).ToArray();
+                var result = methodNode.MethodInfo.Invoke(methodNode.Parent, parameters);
+                foreach (var tuple in argsList)
+                {
+                    tuple?.Item2();
+                }
+
                 if (methodNode.MethodInfo.ReturnType == typeof(void))
                 {
                 }

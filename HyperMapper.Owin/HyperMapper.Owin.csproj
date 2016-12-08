@@ -90,6 +90,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HyperMapper.Mapper\HyperMapper.Mapper.csproj">
+      <Project>{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}</Project>
+      <Name>HyperMapper.Mapper</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HyperMapper.Siren\HyperMapper.Siren.csproj">
       <Project>{8fa8a692-dece-4444-894a-ce7d613801e8}</Project>
       <Name>HyperMapper.Siren</Name>

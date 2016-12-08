@@ -53,9 +53,9 @@ namespace HyperMapper.Examples.TaskList.Web
         /// <summary>
         /// Replace this with your own service location/ ioc container call
         /// </summary>
-        private static object LocateAdaptors(Type type)
+        private static Tuple<object, Action> LocateAdaptors(Type type)
         {
-            if (type == typeof(IdGenerator)) return ((IdGenerator)(() => Guid.NewGuid().ToString()));
+            if (type == typeof(IdGenerator)) return Tuple.Create((object)(IdGenerator)(() => Guid.NewGuid().ToString()), null as Action);
 
             throw new Exception($"Could not resolve {type.FullName}");
         }

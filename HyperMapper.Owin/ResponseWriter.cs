@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using HyperMapper.Mapping;
 using HyperMapper.RepresentationModel;
 using HyperMapper.Siren;
 using Microsoft.Owin;
@@ -54,7 +55,19 @@ namespace HyperMapper.Owin
 
         public string BasePath { get; set; }
 
-        public Func<Type, object> ServiceLocator { get; set; } = type => Activator.CreateInstance(type);
+        public ServiceLocatorDelegate ServiceLocator { get; set; } = type =>
+        {
+            var instance = Activator.CreateInstance(type);
+
+            return Tuple.Create(instance, new Action(() =>
+            {
+                if (instance is IDisposable)
+                {
+                    ((IDisposable) instance).Dispose();
+                }
+            }));
+        };
+
     }
 
     

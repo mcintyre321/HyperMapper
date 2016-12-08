@@ -45,7 +45,7 @@ namespace HyperMapper.Mapping
         //    return new OneOf.Types.None();
         //}
 
-        public static Router RouteFromRootNode(RootNode root, Func<Type, object> serviceLocator)
+        public static Router RouteFromRootNode(RootNode root, ServiceLocatorDelegate serviceLocator)
         {
             return url =>
             {
@@ -55,4 +55,6 @@ namespace HyperMapper.Mapping
             };
         }
     }
+    public delegate Tuple<object, Action> ServiceLocatorDelegate(Type type);
+
 }

@@ -46,7 +46,7 @@ namespace HyperMapper.Owin
                 },
                 async createdResponse =>
                 {
-                    var properties = new Property[]
+                    PropertyList properties = new PropertyList()
                     {
                         //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term[] {new Term("ResultMessage"), }), 
                     };
