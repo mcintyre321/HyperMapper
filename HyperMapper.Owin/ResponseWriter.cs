@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using HyperMapper.Mapping;
 using HyperMapper.RepresentationModel;
 using HyperMapper.Siren;
 using Microsoft.Owin;
@@ -13,7 +12,7 @@ namespace HyperMapper.Owin
 {
     internal static class ResponseWriter
     {
-        public static async Task Write(OwinContext ctx, Uri locationHeader, Representation representation, HyperMapperSettings settings)
+        public static async Task Write(OwinContext ctx, Representation representation, Representor[] settings)
         {
             Func<string, string, Task> writeStringToResponse = async (contentType, body) =>
             {
@@ -22,7 +21,7 @@ namespace HyperMapper.Owin
             };
 
             var accept = ctx.Request.Accept;
-            var representor = settings.Representors.FirstOrDefault(r => r.AcceptTypes.Contains(ctx.Request.Accept));
+            var representor = settings.FirstOrDefault(r => r.AcceptTypes.Contains(ctx.Request.Accept));
             if (representor != null)
             {
                 var response = representor.GetResponse(representation);
@@ -32,7 +31,7 @@ namespace HyperMapper.Owin
             {
                 if (accept.Split(',').Contains("text/html"))
                 {
-                    var sirenRep = settings.Representors.OfType<SirenRepresentor>().Single();
+                    var sirenRep = settings.OfType<SirenRepresentor>().Single();
                     var response = sirenRep.GetResponse(representation);
                     var index = new HyperMapper.Siren.Index() {Model = JToken.Parse(response.Item2)};
                     var transformText = index.TransformText();
@@ -45,30 +44,4 @@ namespace HyperMapper.Owin
             }
         }
     }
-
-    public class HyperMapperSettings
-    {
-        public IList<Representor> Representors = new List<Representor>()
-        {
-            new SirenRepresentor()
-        };
-
-        public string BasePath { get; set; }
-
-        public ServiceLocatorDelegate ServiceLocator { get; set; } = type =>
-        {
-            var instance = Activator.CreateInstance(type);
-
-            return Tuple.Create(instance, new Action(() =>
-            {
-                if (instance is IDisposable)
-                {
-                    ((IDisposable) instance).Dispose();
-                }
-            }));
-        };
-
-    }
-
-    
 }

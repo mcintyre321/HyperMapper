@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using HyperMapper.Examples.TaskList.Domain;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 using HyperMapper.Mapper;
-using HyperMapper.Mapping;
 using HyperMapper.Owin;
 using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
@@ -22,21 +21,25 @@ namespace HyperMapper.Examples.TaskList.Web
     {
         public void Configuration(IAppBuilder app)
         {
-          
-            var hyperMapperSettings = new HyperMapperSettings()
+
+            ServiceLocatorDelegate serviceLocator = type =>
             {
-                BasePath = "/",
-                ServiceLocator = type => LocateAdaptors(type)
+                var instance = Activator.CreateInstance(type);
+
+                return Tuple.Create(instance, new Action(() =>
+                {
+                    if (instance is IDisposable)
+                    {
+                        ((IDisposable) instance).Dispose();
+                    }
+                }));
             };
 
+            var basePath = "/";
+            var appRoot = BuildAppRoot(new Uri(basePath, UriKind.Relative));
+            HyperMapper.RequestHandling.Router makeHypermediaRouter = Routing.MakeHypermediaRouterFromRootNode(appRoot, serviceLocator);
 
-            var appRoot = BuildAppRoot(new Uri("/", UriKind.Relative));
-
-            
-
-            
-
-            app.UseHypermedia(() => Routing.RouteFromRootNode(appRoot, hyperMapperSettings.ServiceLocator), hyperMapperSettings);
+            app.RouteWithRepresentors(makeHypermediaRouter, new Representor[] {new Siren.SirenRepresentor()},  basePath);
 
         }
 
@@ -45,7 +48,7 @@ namespace HyperMapper.Examples.TaskList.Web
             var appRoot = new AppRoot(uri);
             appRoot.Authentication.Register("testuser", "password");
             appRoot.Boards.AddBoard("My tasks", "Things I need to do", () => "board1");
-            var board = appRoot.Boards.Items.Single(i => i.Key == "board1");
+            var board = appRoot.Boards.Items.Single(i => i.UrlPart == "board1");
             board.AddCard("Finish HyperMapper", "Coding n stuff", () => "card1");
             return appRoot;
         }

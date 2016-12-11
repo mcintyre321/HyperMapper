@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using HyperMapper.Helpers;
-using HyperMapper.Mapping;
 using HyperMapper.RepresentationModel;
 using HyperMapper.RepresentationModel.Vocab;
 using HyperMapper.RequestHandling;
@@ -23,31 +22,35 @@ namespace HyperMapper.Mapper
             public Uri propertyUri { get; set; }
         }
 
-        public static Resource MakeResourceFromNode(INode nodeAndUri, ServiceLocatorDelegate serviceLocator)
+        public static Resource MakeResourceFromNode(INode node, ServiceLocatorDelegate serviceLocator)
         {
-            var methodNode = nodeAndUri as MethodInfoNode;
+            var methodNode = node as MethodInfoNode;
 
             if (methodNode != null)
             {
-                return BuildFromMethodInfo(methodNode, serviceLocator);
+                var resource = new Resource(methodNode.Title, methodNode.Uri, new string[0], new[]
+                {
+                    BuildGetHandlerForMethodInfo(methodNode),
+                    BuildPostHandlerForMethodInfo(methodNode, serviceLocator)
+                });
+                return resource;
             }
             else
             {
-                var type = nodeAndUri.GetType().GetTypeInfo();
-                var nodeUri = nodeAndUri.Uri;
-                var node = nodeAndUri;
+                var type = node.GetType().GetTypeInfo();
+                var nodeUri = node.Uri;
                 //var linkedChildResources = GetLinksFromTypeProperties(node, nodeUri, serviceLocator, type);
                 //var linkedActionResources = Functions.GetLinksFromTypeMethods(type, nodeUri, node, serviceLocator,
-                //    nodeAndUri);
+                //    node);
 
                 var childLinks =
-                    node.ChildKeys.Select(node.GetChild)
+                    node.ChildKeys.Select(key => node.GetChild(key))
                         .Select(
                             c =>
                             {
-                                var uri = UriHelper.Combine(nodeUri, c.Key.ToString());
+                                var uri = UriHelper.Combine(nodeUri, c.UrlPart.ToString());
                                 var term = Term.Child;
-                                return new Link(c.Title.ToString(),  uri, term)
+                                return new Link(c.Title.ToString(), uri, term)
                                 {
                                     Follow = () => MakeResourceFromNode(c, serviceLocator)
                                 };
@@ -79,7 +82,8 @@ namespace HyperMapper.Mapper
                             .Select(
                                 x =>
                                     new ValueProperty(x.propertyInfo.Name,
-                                        JToken.FromObject(x.propertyInfo.GetValue(node)), TermFactory.From(x.propertyInfo)));
+                                        JToken.FromObject(x.propertyInfo.GetValue(node)),
+                                        TermFactory.From(x.propertyInfo)));
 
                         foreach (var property in properties)
                         {
@@ -203,16 +207,7 @@ namespace HyperMapper.Mapper
                 .Select(t => t.Name).ToArray();
         }
 
-        static Resource BuildFromMethodInfo(MethodInfoNode node, ServiceLocatorDelegate serviceLocator)
-        {
-            var resource = new Resource(node.Title, node.Uri, new string[0],   new[]
-            {
-                BuildGetHandlerForMethodInfo(node),
-                BuildPostHandlerForMethodInfo(node, serviceLocator)
-            });
-
-            return resource;
-        }
+     
 
         private static MethodHandler BuildGetHandlerForMethodInfo(MethodInfoNode methodInfoNode)
         {
@@ -265,7 +260,7 @@ namespace HyperMapper.Mapper
                         {
                             argsEnumerator.MoveNext();
                             var current = argsEnumerator.Current;
-                            if (current.Item1 != new Key(pi.Name))
+                            if (current.Item1 != new UrlPart(pi.Name))
                                 throw new ArgumentException("Mismatch: expected " + pi.Name + ", received" +
                                                             current.Item1.ToString());
                             return Tuple.Create(current.Item2, null as Action);

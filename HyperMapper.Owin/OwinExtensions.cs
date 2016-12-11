@@ -8,16 +8,14 @@ namespace HyperMapper.Owin
 {
     public static class OwinExtensions
     {
-        public static IAppBuilder UseHypermedia(this IAppBuilder appBuilder,
-            Func<Router> router,
-            HyperMapperSettings settings)
+        public static IAppBuilder RouteWithRepresentors(this IAppBuilder appBuilder, Router router, Representor[] representors, string basePath)
         {
 
             var poco = new RequestHandlerBuilder();
-            var requestHandler = poco.MakeRequestHandler(new Uri(settings.BasePath, UriKind.Relative), router);
+            var requestHandler = poco.MakeRequestHandler(new Uri(basePath, UriKind.Relative), router);
              
 
-            return appBuilder.Use(OwinInitializers.UseHypermedia(settings, requestHandler));
+            return appBuilder.Use(OwinInitializers.UseRepresentors(representors, requestHandler, basePath));
         }
     }
 }

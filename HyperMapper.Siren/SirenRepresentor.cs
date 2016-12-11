@@ -88,7 +88,7 @@ namespace HyperMapper.Siren
                         //        Method = HttpVerbs.POST,
                         //        Fields = posttHandler.Parameters.Select(mp => new Field()
                         //        {
-                        //            Name = mp.Key.ToString(),
+                        //            Name = mp.UrlPart.ToString(),
                         //            Type = LookupFieldType(mp.Type)
                         //        })
                         //    };
@@ -111,7 +111,7 @@ namespace HyperMapper.Siren
                                 Method = HttpVerbs.POST,
                                 Fields = operation.Parameters.Select(mp => new Field()
                                 {
-                                    Name = mp.Key.ToString(),
+                                    Name = mp.UrlPart.ToString(),
                                     Type = LookupFieldType(mp.Type)
                                 })
                             };
@@ -173,18 +173,18 @@ namespace HyperMapper.Siren
 
         //private static Action MapAction(HyperModel.Operation operation)
         //{
-        //    var item = new Action(operation.Key.ToString(), operation.Href)
+        //    var item = new Action(operation.UrlPart.ToString(), operation.Href)
         //    {
         //        Method = (HttpVerbs) Enum.Parse(typeof (HttpVerbs), operation.Method, true),
         //        Title = operation.Title,
         //        Type = operation.ContentType,
-        //        Fields = operation.Fields.Select(f => new Field(f.Key.ToString())
+        //        Fields = operation.Fields.Select(f => new Field(f.UrlPart.ToString())
         //        {
         //            Value = f.Value,
         //            Type = FieldTypes.Text
         //        }),
         //        Href = operation.Href,
-        //        Name = operation.Key.ToString(),
+        //        Name = operation.UrlPart.ToString(),
         //    };
         //    return item;
     }

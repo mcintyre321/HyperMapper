@@ -238,10 +238,10 @@ namespace HyperMapper.Owin
                 {
                     continue;
                 }
-                // split on key
+                // split on UrlPart
                 int index = str.IndexOf('=');
                 string name = str;
-                string value = ""; // value is empty if there is no key
+                string value = ""; // value is empty if there is no UrlPart
                 if (index >= 0)
                 {
                     name = str.Substring(0, (index) - (0));
@@ -254,7 +254,7 @@ namespace HyperMapper.Owin
             }
             foreach (var pair in pairs)
             {
-                // percent decode the key and value if necessary
+                // percent decode the UrlPart and value if necessary
                 pair[0] = PercentDecodeUTF8(pair[0]);
                 pair[1] = PercentDecodeUTF8(pair[1]);
             }

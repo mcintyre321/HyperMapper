@@ -1,21 +1,19 @@
 using System;
 using System.Linq;
-using HyperMapper.Mapper;
 using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
 using OneOf;
 using OneOf.Types;
 
-namespace HyperMapper.Mapping
+namespace HyperMapper.Mapper
 {
     public class Routing
     {
-        public static Func<string, OneOf<INode, None>> RouteByWalkingNode(INode root)
+        public static Func<BaseUrlRelativePath, OneOf<INode, None>> RouteByWalkingNode(INode root)
         {
             return path =>
             {
-                var parts = path.Split('/')
-                    .Where(p => !String.IsNullOrEmpty(p));
+                var parts = path.GetParts();
 
                 return parts
                     .Aggregate((OneOf<INode, None>) root,
@@ -45,7 +43,7 @@ namespace HyperMapper.Mapping
         //    return new OneOf.Types.None();
         //}
 
-        public static Router RouteFromRootNode(RootNode root, ServiceLocatorDelegate serviceLocator)
+        public static Router MakeHypermediaRouterFromRootNode(RootNode root, ServiceLocatorDelegate serviceLocator)
         {
             return url =>
             {

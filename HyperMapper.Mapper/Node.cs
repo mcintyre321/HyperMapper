@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HyperMapper.Helpers;
-using HyperMapper.Mapper;
 using HyperMapper.RepresentationModel;
 
-namespace HyperMapper.Mapping
+namespace HyperMapper.Mapper
 {
     /// <summary>
     /// This is an implementation of INode which contains code for adding and removing
@@ -15,13 +14,13 @@ namespace HyperMapper.Mapping
     [HyperMapper(UseTypeNameAsClassNameForEntity = false)]
     public class Node : INode
     {
-        public override Uri Uri => UriHelper.Combine(Parent.Uri, Key.ToString());
+        public override Uri Uri => UriHelper.Combine(Parent.Uri, UrlPart.ToString());
         public override Term[] Terms { get; }
 
-        readonly Dictionary<Key, INode> _children = new Dictionary<Key, INode>();
+        readonly Dictionary<UrlPart, INode> _children = new Dictionary<UrlPart, INode>();
         public override INode Parent { get; }
-        public override Key Key { get; }
-        public override IEnumerable<Key> ChildKeys => _children.Keys;
+        public override UrlPart UrlPart { get; }
+        public override IEnumerable<UrlPart> ChildKeys => _children.Keys;
         public override string Title { get; }
 
         protected Node(string title, Term[] terms) 
@@ -37,27 +36,27 @@ namespace HyperMapper.Mapping
             }
         }
 
-        internal Node(INode parent, Key key, string title, Term[] terms) : this(title, terms)
+        internal Node(INode parent, UrlPart urlPart, string title, Term[] terms) : this(title, terms)
         {
             if (parent == null) throw new ArgumentException();
-            if (key == null || parent.HasChild(key)) throw new ArgumentException();
+            if (urlPart == null || parent.HasChild(urlPart)) throw new ArgumentException();
             this.Parent = parent;
-            this.Key = key;
+            this.UrlPart = urlPart;
         }
 
-        public override bool HasChild(Key key)
+        public override bool HasChild(UrlPart urlPart)
         {
-            return _children.ContainsKey(key.ToString());
+            return _children.ContainsKey(urlPart.ToString());
         }
 
 
         /// <summary>
-        /// Return a the child INode which has the matching key. By default this checks the known _children
+        /// Return a the child INode which has the matching UrlPart. By default this checks the known _children
         /// but can be overridden to return dynamically created _children.
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public override INode GetChild(Key key)
+        public override INode GetChild(UrlPart key)
         {
             INode node = null;
             if (_children.TryGetValue(key, out node)) return node;
@@ -67,11 +66,11 @@ namespace HyperMapper.Mapping
         private INode Root => ((INode)this).Recurse(n => n.Parent).TakeWhile(n => n != null).Last();
 
         /// <summary>
-        /// Add a node to the known _children of this Node, so that the node can be found by it's Key
+        /// Add a node to the known _children of this Node, so that the node can be found by it's UrlPart
         /// property, and can be found. This is as opposed to the 'unknown' _children e.g. a child that
         /// can only be accessed via an expense query.
         /// 
-        /// This will not allow you to add a child if the Key is already a known child. The node being added
+        /// This will not allow you to add a child if the UrlPart is already a known child. The node being added
         /// must already have this node set as it's parent.
         /// </summary>
         /// <typeparam name="T"></typeparam>
@@ -80,8 +79,8 @@ namespace HyperMapper.Mapping
         public T AddChild<T>(T node) where T : INode
         {
             if (node.Parent != this) throw new InvalidOperationException();
-            if (this.HasChild(node.Key)) throw new InvalidOperationException();
-            _children.Add(node.Key.ToString(), node);
+            if (this.HasChild(node.UrlPart)) throw new InvalidOperationException();
+            _children.Add(node.UrlPart.ToString(), node);
             return node;
         }
     }
@@ -91,20 +90,20 @@ namespace HyperMapper.Mapping
         public MethodInfoNode(INode parent, MethodInfo mi)
         {
             Parent = parent;
-            Key = new Key(mi.Name);
+            UrlPart = new UrlPart(mi.Name);
             Title = mi.Name;
             MethodInfo = mi;
         }
 
         public override INode Parent { get; }
-        public override Key Key { get; }
-        public override IEnumerable<Key> ChildKeys { get; } = new Key[0];
+        public override UrlPart UrlPart { get; }
+        public override IEnumerable<UrlPart> ChildKeys { get; } = new UrlPart[0];
         public override string Title { get; }
-        public override bool HasChild(Key key) => false;
+        public override bool HasChild(UrlPart urlPart) => false;
 
-        public override INode GetChild(Key key) => null;
+        public override INode GetChild(UrlPart key) => null;
 
-        public override Uri Uri => UriHelper.Combine(Parent.Uri, Key.ToString());
+        public override Uri Uri => UriHelper.Combine(Parent.Uri, UrlPart.ToString());
         public override Term[] Terms => TermFactory.From(MethodInfo);
 
         public MethodInfo MethodInfo { get; }
@@ -114,7 +113,7 @@ namespace HyperMapper.Mapping
     public class Node<TParent> : Node where TParent : Node
     {
         public new TParent Parent { get; }
-        protected Node(TParent parent, Key key, string title, Term[] terms) : base(parent, key, title, terms)
+        protected Node(TParent parent, UrlPart urlPart, string title, Term[] terms) : base(parent, urlPart, title, terms)
         {
             this.Parent = parent;
         }

@@ -4,11 +4,11 @@ namespace HyperMapper.ResourceModel
 {
     public class MethodArguments
     {
-        public MethodArguments(Tuple<Key, object>[] args)
+        public MethodArguments(Tuple<UrlPart, object>[] args)
         {
             Args = args;
         }
 
-        public Tuple<Key, object>[] Args { get; }
+        public Tuple<UrlPart, object>[] Args { get; }
     }
 }

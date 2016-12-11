@@ -1,6 +1,6 @@
 using System;
 
-namespace HyperMapper.Mapping
+namespace HyperMapper.Mapper
 {
     public class ExposeAttribute : Attribute
     {

@@ -60,7 +60,7 @@ class Siren extends React.Component {
             <div className="entity">
             {
                 Object.keys(state.properties || []).map(function(key) {
-                    return <div key={key}>{key}: {state.properties[key]}</div>;
+                    return <div UrlPart={key}>{key}: {state.properties[key]}</div>;
                 })
             }
             {

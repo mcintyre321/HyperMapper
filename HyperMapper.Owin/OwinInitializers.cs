@@ -15,20 +15,20 @@ namespace HyperMapper.Owin
     {
         public delegate Task AppFunc(IDictionary<string, object> env);
 
-        public static Func<AppFunc, AppFunc> UseHypermedia(HyperMapperSettings settings, RequestHandler requestHandler)
+        public static Func<AppFunc, AppFunc> UseRepresentors(Representor[] representors, RequestHandler requestHandler, string basePath)
         {
             return app => env =>
             {
                 var ctx = new OwinContext(env);
-                if (!ctx.Request.Path.Value.StartsWith(settings.BasePath.ToString()))
+                if (!ctx.Request.Path.Value.StartsWith(basePath.ToString()))
                     return app(env);
 
-                return HandleRequest(settings, ctx, requestHandler);
+                return HandleRequest(representors, ctx, requestHandler);
             };
         }
 
 
-        private static async Task HandleRequest(HyperMapperSettings settings, OwinContext ctx, RequestHandler requestHandler)
+        private static async Task HandleRequest(Representor[] settings, OwinContext ctx, RequestHandler requestHandler)
         {
             RequestHandling.BindModel bindModel = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
             var request = new Request(Method.Parse(ctx.Request.Method), ctx.Request.Uri)
@@ -41,7 +41,7 @@ namespace HyperMapper.Owin
                 modelBindingFailedResponse => Task.FromResult(false), 
                 async representationResponse =>
                 {
-                    await ResponseWriter.Write(ctx, null, representationResponse.Representation, settings);
+                    await ResponseWriter.Write(ctx, representationResponse.Representation, settings);
                     return true;
                 },
                 async createdResponse =>
@@ -50,7 +50,7 @@ namespace HyperMapper.Owin
                     {
                         //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term[] {new Term("ResultMessage"), }), 
                     };
-                    await ResponseWriter.Write(ctx, createdResponse.Uri, new Representation(ctx.Request.Uri, properties), settings);
+                    await ResponseWriter.Write(ctx, new Representation(ctx.Request.Uri, properties), settings);
                     return true;
                 });
             

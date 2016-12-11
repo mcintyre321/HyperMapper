@@ -6,7 +6,7 @@ namespace HyperMapper.ResourceModel
 {
     public class MethodHandler
     {
-        public delegate Task<InvokeResult> InvokeMethodDelegate(IEnumerable<Tuple<Key, object>>  args);
+        public delegate Task<InvokeResult> InvokeMethodDelegate(IEnumerable<Tuple<UrlPart, object>>  args);
         private readonly InvokeMethodDelegate _invoke;
 
         public MethodHandler(Method method, MethodParameter[] parameters, InvokeMethodDelegate invoke)

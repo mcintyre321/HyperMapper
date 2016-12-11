@@ -3,12 +3,12 @@ using Newtonsoft.Json;
 
 namespace HyperMapper
 {
-    [JsonConverter(typeof(Key.JsonConverter))]
-    public class Key  
+    [JsonConverter(typeof(UrlPart.JsonConverter))]
+    public class UrlPart  
     {
         readonly string _value;
 
-        public Key(string value)
+        public UrlPart(string value)
         {
             this._value = value;
         }
@@ -17,9 +17,9 @@ namespace HyperMapper
         {
             return _value;
         }
-        public static implicit operator Key(string key)
+        public static implicit operator UrlPart(string key)
         {
-            return new Key(key);
+            return new UrlPart(key);
         }
 
         public class JsonConverter : Newtonsoft.Json.JsonConverter
@@ -36,11 +36,11 @@ namespace HyperMapper
 
             public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
             {
-                return (Key) reader.ReadAsString();
+                return (UrlPart) reader.ReadAsString();
             }
         }
 
-        protected bool Equals(Key other)
+        protected bool Equals(UrlPart other)
         {
             return string.Equals(_value, other._value);
         }
@@ -50,7 +50,7 @@ namespace HyperMapper
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((Key) obj);
+            return Equals((UrlPart) obj);
         }
 
         public override int GetHashCode()
@@ -58,12 +58,12 @@ namespace HyperMapper
             return (_value != null ? _value.GetHashCode() : 0);
         }
 
-        public static bool operator ==(Key left, Key right)
+        public static bool operator ==(UrlPart left, UrlPart right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(Key left, Key right)
+        public static bool operator !=(UrlPart left, UrlPart right)
         {
             return !Equals(left, right);
         }

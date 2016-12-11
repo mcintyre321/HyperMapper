@@ -1,4 +1,4 @@
-namespace HyperMapper.Mapping.ActionResults
+namespace HyperMapper.Mapper.ActionResults
 {
     public class OK { }
 }

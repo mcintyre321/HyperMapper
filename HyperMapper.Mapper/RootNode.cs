@@ -1,7 +1,7 @@
 ﻿using System;
 using HyperMapper.RepresentationModel;
 
-namespace HyperMapper.Mapping
+namespace HyperMapper.Mapper
 {
     [HyperMapper(UseTypeNameAsClassNameForEntity = false)]
     public class RootNode : Node

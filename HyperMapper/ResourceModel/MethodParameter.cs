@@ -5,15 +5,15 @@ namespace HyperMapper.ResourceModel
 {
     public class MethodParameter
     {
-        public MethodParameter(Key key, MethodParameterType type)
+        public MethodParameter(UrlPart urlPart, MethodParameterType type)
         {
-            Key = key;
+            UrlPart = urlPart;
             Type = type;
         }
 
         public MethodParameter() { }
 
-        public Key Key { get; private set; }
+        public UrlPart UrlPart { get; private set; }
         public MethodParameterType Type { get; private set; }
 
         [JsonConverter(typeof(StringEnumConverter))]

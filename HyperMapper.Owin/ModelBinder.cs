@@ -18,7 +18,7 @@ namespace HyperMapper.Owin
         public static async Task<OneOf<ModelBindingFailed, MethodArguments>> BindArgsFromRequest(MethodParameter[] parameters,
             IOwinRequest request)
         {
-            if (parameters.Length == 0) return new MethodArguments(new Tuple<Key, object>[0]);
+            if (parameters.Length == 0) return new MethodArguments(new Tuple<UrlPart, object>[0]);
 
             switch (request.ContentType.Split(';')[0])
             {
@@ -31,7 +31,7 @@ namespace HyperMapper.Owin
                         var tuples = parameters
                             .Select(
                                 methodParameter =>
-                                    Tuple.Create(methodParameter.Key, jObject[methodParameter.Key.ToString()]?.ToObject(FieldTypeToTypeLookup(methodParameter.Type))))
+                                    Tuple.Create(methodParameter.UrlPart, jObject[methodParameter.UrlPart.ToString()]?.ToObject(FieldTypeToTypeLookup(methodParameter.Type))))
                             .ToArray();
                         return new MethodArguments(tuples);
                     }
@@ -43,7 +43,7 @@ namespace HyperMapper.Owin
                         var dict = QueryStringHelper.QueryStringToDict(rawBody);
                         var jObject = JObject.Parse(JsonConvert.SerializeObject(dict));
                         return new MethodArguments(parameters
-                            .Select(ai => Tuple.Create(ai.Key, jObject[ai.Key.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
+                            .Select(ai => Tuple.Create(ai.UrlPart, jObject[ai.UrlPart.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
                             .ToArray());
                     }
                     break;
@@ -56,7 +56,7 @@ namespace HyperMapper.Owin
                         multiPartJObject[parameterPart.Name] = parameterPart.Data;
                     }
                     return new MethodArguments(parameters
-                        .Select(ai => Tuple.Create(ai.Key, multiPartJObject[ai.Key.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
+                        .Select(ai => Tuple.Create(ai.UrlPart, multiPartJObject[ai.UrlPart.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
                         .ToArray());
 
                     break;
