@@ -8,14 +8,14 @@ namespace HyperMapper.RepresentationModel
     public abstract class Property
     {
         public string Name { get; }
-        public Term[] Terms { get; set; }
+        public Term Term { get; set; }
 
-        public Property(string name, Term[] terms)
+        public Property(string name, Term term)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentNullException(nameof(name));
-            if (terms == null) throw new ArgumentNullException(nameof(terms));
+            if (term == null) throw new ArgumentNullException(nameof(term));
             Name = name;
-            Terms = terms;
+            Term = term;
         }
         
     }

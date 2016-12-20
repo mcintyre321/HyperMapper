@@ -6,9 +6,9 @@ using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {
-    public class Boards : Node<AppRoot>
+    public class Boards : Node<TaskListAppRoot>
     {
-        public Boards(AppRoot parent, UrlPart urlPart) : base(parent, urlPart, nameof(Boards), TermFactory.From<Boards>()) { }
+        public Boards(TaskListAppRoot parent, UrlPart urlPart) : base(parent, urlPart, nameof(Boards), TermFactory.From<Boards>()) { }
 
         List<Board> _boards = new List<Board>();
         [Expose]

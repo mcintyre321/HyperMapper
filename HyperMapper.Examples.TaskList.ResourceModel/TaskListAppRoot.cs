@@ -6,7 +6,7 @@ using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {
-    public class AppRoot : RootNode
+    public class TaskListAppRoot : RootNode
     {
         [Expose]
         public Authentication Authentication { get; }
@@ -14,7 +14,7 @@ namespace HyperMapper.Examples.TaskList.Domain
         [Expose]
         public Boards Boards { get; }
 
-        public AppRoot(Uri uri) :base("Task Lists App", uri, TermFactory.From<AppRoot>())
+        public TaskListAppRoot(Uri uri) :base("Task Lists App", uri, TermFactory.From<TaskListAppRoot>())
         {
             this.Authentication = AddChild(new Authentication(this, nameof(Authentication)));
             this.Boards = AddChild(new Boards(this, nameof(Boards)));

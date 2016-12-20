@@ -11,7 +11,7 @@ namespace HyperMapper.RepresentationModel.Vocab
         public Uri Uri { get; private set; }
 
 
-        public Operation(string name, IEnumerable<MethodParameter> parameters, Uri uri, Term[] terms) : base(name, terms.Append(new Term(nameof(Operation))).ToArray())
+        public Operation(string name, IEnumerable<MethodParameter> parameters, Uri uri, Term term) : base(name, term)
         {
             Parameters = parameters;
             Uri = uri;

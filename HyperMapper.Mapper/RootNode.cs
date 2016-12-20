@@ -9,7 +9,7 @@ namespace HyperMapper.Mapper
         private readonly Uri _uri;
         public sealed override Uri Uri => _uri;
 
-        public RootNode(string title, Uri uri, Term[] terms) : base(title, terms)
+        public RootNode(string title, Uri uri, Term term) : base(title, term)
         {
             _uri = uri;
         }

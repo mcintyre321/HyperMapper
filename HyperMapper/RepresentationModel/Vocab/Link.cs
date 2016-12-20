@@ -6,7 +6,7 @@ namespace HyperMapper.RepresentationModel.Vocab
 {
     public class Link : Property
     {
-        public Link(string name, Uri uri, params Term[] terms) : base(name, terms)
+        public Link(string name, Uri uri, Term term) : base(name, term)
         {
             Uri = uri;
         }

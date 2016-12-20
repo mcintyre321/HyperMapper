@@ -15,7 +15,7 @@ namespace HyperMapper.Mapper
     public class Node : INode
     {
         public override Uri Uri => UriHelper.Combine(Parent.Uri, UrlPart.ToString());
-        public override Term[] Terms { get; }
+        public override Term Term { get; }
 
         readonly Dictionary<UrlPart, INode> _children = new Dictionary<UrlPart, INode>();
         public override INode Parent { get; }
@@ -23,10 +23,10 @@ namespace HyperMapper.Mapper
         public override IEnumerable<UrlPart> ChildKeys => _children.Keys;
         public override string Title { get; }
 
-        protected Node(string title, Term[] terms) 
+        internal Node(string title, Term term) 
         {
             Title = title;
-            Terms = terms;
+            Term = term;
             var methodNodes = this.GetType().GetRuntimeMethods()
                 .Where(mi => mi.GetCustomAttribute<ExposeAttribute>() != null)
                 .Select(rm => new MethodInfoNode(this, rm));
@@ -36,7 +36,7 @@ namespace HyperMapper.Mapper
             }
         }
 
-        internal Node(INode parent, UrlPart urlPart, string title, Term[] terms) : this(title, terms)
+        protected internal Node(INode parent, UrlPart urlPart, string title, Term terms) : this(title, terms)
         {
             if (parent == null) throw new ArgumentException();
             if (urlPart == null || parent.HasChild(urlPart)) throw new ArgumentException();
@@ -104,7 +104,7 @@ namespace HyperMapper.Mapper
         public override INode GetChild(UrlPart key) => null;
 
         public override Uri Uri => UriHelper.Combine(Parent.Uri, UrlPart.ToString());
-        public override Term[] Terms => TermFactory.From(MethodInfo);
+        public override Term Term => TermFactory.From(MethodInfo);
 
         public MethodInfo MethodInfo { get; }
     }
@@ -113,7 +113,7 @@ namespace HyperMapper.Mapper
     public class Node<TParent> : Node where TParent : Node
     {
         public new TParent Parent { get; }
-        protected Node(TParent parent, UrlPart urlPart, string title, Term[] terms) : base(parent, urlPart, title, terms)
+        protected Node(TParent parent, UrlPart urlPart, string title, Term terms) : base(parent, urlPart, title, terms)
         {
             this.Parent = parent;
         }

@@ -28,7 +28,7 @@ namespace HyperMapper.Mapper
 
             if (methodNode != null)
             {
-                var resource = new Resource(methodNode.Title, methodNode.Uri, new string[0], new[]
+                var resource = new Resource(new[]
                 {
                     BuildGetHandlerForMethodInfo(methodNode),
                     BuildPostHandlerForMethodInfo(methodNode, serviceLocator)
@@ -71,7 +71,7 @@ namespace HyperMapper.Mapper
                 {
                     new MethodHandler(new Method.Get(), new MethodParameter[0], arguments =>
                     {
-                        var oneOfs = new PropertyList();
+                        var oneOfs = new HashSet<Property> ();
                         foreach (var link in links)
                         {
                             oneOfs.Add(link);
@@ -99,7 +99,7 @@ namespace HyperMapper.Mapper
 
 
 
-                var entity = new Resource(node.Title, nodeUri, GetClasses(type).ToArray(), methodHandlers.ToArray());
+                var entity = new Resource(methodHandlers.ToArray());
 
                 return entity;
             }
@@ -213,7 +213,7 @@ namespace HyperMapper.Mapper
         {
             return new MethodHandler(new Method.Get(), new MethodParameter[0], tuples =>
             {
-                PropertyList oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
+                HashSet<Property>  oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
                 oneOfs.Add(new ValueProperty("title", JToken.FromObject(methodInfoNode.Title), Term.Title));
                 var representation = new Representation(methodInfoNode.Uri, oneOfs);
                 var representationResult = new InvokeResult.RepresentationResult(representation);
@@ -221,9 +221,9 @@ namespace HyperMapper.Mapper
             });
         }
 
-        private static PropertyList BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
+        private static HashSet<Property>  BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
         {
-            var oneOfs = new PropertyList ();
+            var oneOfs = new HashSet<Property>  ();
             oneOfs.Add(new Link(methodInfoNode.Parent.Title, methodInfoNode.Parent.Uri, Term.Parent));
             var methodParameters =
                 methodInfoNode.MethodInfo.GetParameters()
@@ -271,7 +271,7 @@ namespace HyperMapper.Mapper
                 var result = methodNode.MethodInfo.Invoke(methodNode.Parent, parameters);
                 foreach (var tuple in argsList)
                 {
-                    tuple?.Item2();
+                    tuple.Item2?.Invoke();
                 }
 
                 if (methodNode.MethodInfo.ReturnType == typeof(void))
@@ -288,7 +288,7 @@ namespace HyperMapper.Mapper
                 var node = result as INode;
                 if (node != null)
                 {
-                    resourceElements.Add(new Link($"Created \'{node.Title}\'", node.Uri, node.Terms));
+                    resourceElements.Add(new Link($"Created \'{node.Title}\'", node.Uri, node.Term));
                 }
                 resourceElements.Add(new ValueProperty("title", JToken.FromObject(methodNode.Title), Term.Title));
                 var representation = new Representation(methodNode.Uri, resourceElements);

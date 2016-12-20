@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Siren", "HyperM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Mapper", "HyperMapper.Mapper\HyperMapper.Mapper.csproj", "{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Examples.TaskList.Web", "HyperMapper.Examples.TaskList.Web\HyperMapper.Examples.TaskList.Web.csproj", "{D4501B25-2E89-4C78-9D83-639D56CE6D2D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Examples.Web", "HyperMapper.Examples.Web\HyperMapper.Examples.Web.csproj", "{D4501B25-2E89-4C78-9D83-639D56CE6D2D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

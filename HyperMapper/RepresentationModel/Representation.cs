@@ -6,10 +6,10 @@ namespace HyperMapper.RepresentationModel
 {
     public class Representation
     {
-        public Representation(Uri uri, PropertyList children)
+        public Representation(Uri uri, HashSet<Property> children)
         {
             Uri = uri;
-            Children = children.ToEnumerable();
+            Children = children;
         }
 
         public Uri Uri { get;  }

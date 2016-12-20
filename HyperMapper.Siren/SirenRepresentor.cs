@@ -96,7 +96,7 @@ namespace HyperMapper.Siren
                         //}
                         //else
                         {
-                            links.Add(new SirenDotNet.Link(link.Uri, RelsFromTerm(link.Terms))
+                            links.Add(new SirenDotNet.Link(link.Uri, RelsFromTerm(link.Term))
                             {
                                 Title = link.Name,
                             });
@@ -121,7 +121,7 @@ namespace HyperMapper.Siren
                     else
                     {
                         var property = (ValueProperty) pair;
-                        var isTitle = property.Terms.Contains(Term.Title);
+                        var isTitle = property.Term == Term.Title;
                         if (isTitle)
                         {
                             sirenTitle = property.Value.ToObject<string>();
@@ -152,9 +152,9 @@ namespace HyperMapper.Siren
             return entity;
         }
 
-        private string[] RelsFromTerm(Term[] terms)
+        private string RelsFromTerm(Term terms)
         {
-            return terms.Select(t => t.ToString()).ToArray();
+            return terms.ToString();
         }
 
         private FieldTypes LookupFieldType(MethodParameter.MethodParameterType type)

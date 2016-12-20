@@ -9,9 +9,9 @@ using HyperMapper.RepresentationModel;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {
-    public class Authentication : Node<AppRoot>
+    public class Authentication : Node<TaskListAppRoot>
     {
-        public Authentication(AppRoot parent, UrlPart urlPart) : base(parent, urlPart, nameof(Authentication), TermFactory.From<Authentication>()) { }
+        public Authentication(TaskListAppRoot parent, UrlPart urlPart) : base(parent, urlPart, nameof(Authentication), TermFactory.From<Authentication>()) { }
         [Expose]
         public OneOf.OneOf<OK, UserError> Register(string username, string password)
         {

@@ -25,9 +25,6 @@ namespace HyperMapper.RequestHandling
         }
     }
 
-     
-
-
     public delegate OneOf<Resource, None> Router(BaseUrlRelativePath path);
     public class RequestHandlerBuilder
     {

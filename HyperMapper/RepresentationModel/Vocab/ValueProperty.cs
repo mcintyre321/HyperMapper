@@ -7,7 +7,7 @@ namespace HyperMapper.RepresentationModel.Vocab
     {
         public JToken Value { get; }
 
-        public ValueProperty(string name, JToken value, params Term[] terms) : base(name, terms)
+        public ValueProperty(string name, JToken value, Term term) : base(name, term)
         {
             Value = value;
         }

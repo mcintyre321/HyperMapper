@@ -4,19 +4,19 @@ namespace HyperMapper.RepresentationModel
 {
     public static class TermFactory
     {
-        public static Term[] From(PropertyInfo propertyInfo)
+        public static Term From(PropertyInfo propertyInfo)
         {
-            return new [] { new Term(propertyInfo.DeclaringType.FullName + "_" + propertyInfo.Name)};
+            return new Term(propertyInfo.DeclaringType.FullName + "_" + propertyInfo.Name);
         }
 
-        public static Term[] From(MethodInfo methodInfo)
+        public static Term From(MethodInfo methodInfo)
         {
-            return new[] { new Term(methodInfo.DeclaringType.FullName + "_" + methodInfo.Name)};
+            return  new Term(methodInfo.DeclaringType.FullName + "_" + methodInfo.Name);
         }
 
-        public static Term[] From<T>()
+        public static Term From<T>()
         {
-            return new[] { new Term(typeof(T).FullName)};
+            return new Term(typeof(T).FullName);
         }
 
     }

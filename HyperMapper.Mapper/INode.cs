@@ -13,6 +13,7 @@ namespace HyperMapper.Mapper
         public abstract bool HasChild(UrlPart urlPart);
         public abstract INode GetChild(UrlPart key);
         public abstract Uri Uri { get; }
-        public abstract Term[] Terms { get; }
+        public abstract Term Term { get; }
+
     }
 }

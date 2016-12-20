@@ -46,9 +46,9 @@ namespace HyperMapper.Owin
                 },
                 async createdResponse =>
                 {
-                    PropertyList properties = new PropertyList()
+                    HashSet<Property> properties = new HashSet<Property>()
                     {
-                        //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term[] {new Term("ResultMessage"), }), 
+                        //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term {new Term("ResultMessage"), }), 
                     };
                     await ResponseWriter.Write(ctx, new Representation(ctx.Request.Uri, properties), settings);
                     return true;

@@ -35,7 +35,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
-    <Compile Include="RepresentationModel\PropertyList.cs" />
     <Compile Include="RepresentationModel\TermFactory.cs" />
     <Compile Include="RepresentationModel\Vocab\ValueProperty.cs" />
     <Compile Include="RepresentationModel\Vocab\Operation.cs" />
