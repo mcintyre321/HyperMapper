@@ -19,13 +19,16 @@ namespace HyperMapper.Examples.Web
         {
             {
                 var taskListAppRoot = BuildTaskListAppRoot(new Uri("/tasks", UriKind.Relative));
-                RequestHandling.Router taskListRouter = Routing.MakeHypermediaRouterFromRootNode(taskListAppRoot, LocateAdaptors);
-                app.RouteWithRepresentors(taskListRouter, new Representor[] {new Siren.SirenRepresentor()}, taskListAppRoot.Uri.ToString());
+                var glossaryNode = new GlossaryNode(taskListAppRoot);
+
+                RequestHandling.Router taskListRouter = Routing.MakeHypermediaRouterFromRootNode(taskListAppRoot, glossaryNode, LocateAdaptors);
+                app.RouteWithRepresentors(taskListRouter, term => glossaryNode.GetUriForTerm(term), new Representor[] {new Siren.SirenRepresentor()}, taskListAppRoot.Uri.ToString());
             }
             {
                 var chessAppRoot = new GameFactory("GF", new Uri("/chess", UriKind.Relative),                     TermFactory.From<GameFactory>());
-                RequestHandling.Router chessRouter = Routing.MakeHypermediaRouterFromRootNode(chessAppRoot, LocateAdaptors);
-                app.RouteWithRepresentors(chessRouter, new Representor[] {new Siren.SirenRepresentor()}, chessAppRoot.Uri.ToString());
+                var glossaryNode = new GlossaryNode(chessAppRoot);
+                RequestHandling.Router chessRouter = Routing.MakeHypermediaRouterFromRootNode(chessAppRoot, glossaryNode, LocateAdaptors);
+                app.RouteWithRepresentors(chessRouter, term => glossaryNode.GetUriForTerm(term), new Representor[] {new Siren.SirenRepresentor()}, chessAppRoot.Uri.ToString());
             }
 
         }

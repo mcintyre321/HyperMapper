@@ -12,7 +12,7 @@ namespace HyperMapper.Owin
 {
     internal static class ResponseWriter
     {
-        public static async Task Write(OwinContext ctx, Representation representation, Representor[] settings)
+        public static async Task Write(OwinContext ctx, Representation representation, FindUriForTerm termUriFinder, Representor[] settings)
         {
             Func<string, string, Task> writeStringToResponse = async (contentType, body) =>
             {
@@ -24,7 +24,7 @@ namespace HyperMapper.Owin
             var representor = settings.FirstOrDefault(r => r.AcceptTypes.Contains(ctx.Request.Accept));
             if (representor != null)
             {
-                var response = representor.GetResponse(representation);
+                var response = representor.GetResponse(representation, termUriFinder);
                 await writeStringToResponse(response.Item1, response.Item2);
             }
             else
@@ -32,7 +32,7 @@ namespace HyperMapper.Owin
                 if (accept.Split(',').Contains("text/html"))
                 {
                     var sirenRep = settings.OfType<SirenRepresentor>().Single();
-                    var response = sirenRep.GetResponse(representation);
+                    var response = sirenRep.GetResponse(representation, termUriFinder);
                     var index = new HyperMapper.Siren.Index() {Model = JToken.Parse(response.Item2)};
                     var transformText = index.TransformText();
                     await writeStringToResponse("text/html", transformText);

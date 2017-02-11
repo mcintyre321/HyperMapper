@@ -41,9 +41,9 @@ namespace HyperMapper.Siren
 
         
 
-        public override Tuple<string, string> GetResponse(Representation hypermediaObject)
+        public override Tuple<string, string> GetResponse(Representation hypermediaObject, FindUriForTerm termUriFinder)
         {
-            var responseEntity = this.BuildFromHypermedia(hypermediaObject);
+            var responseEntity = this.BuildFromHypermedia(hypermediaObject, termUriFinder);
             var serializerSettings = this.JsonSerializerSettings;
 
             var serializer = JsonSerializer.Create(serializerSettings);
@@ -54,7 +54,7 @@ namespace HyperMapper.Siren
 
         public override IEnumerable<string> AcceptTypes { get; } = new[] {"application/vnd.siren+json"};
 
-        public SirenDotNet.Entity BuildFromHypermedia(Representation representation)
+        public SirenDotNet.Entity BuildFromHypermedia(Representation representation, FindUriForTerm uriTermFinder)
         {
             var links = new List<SirenDotNet.Link>()
             {
@@ -96,7 +96,7 @@ namespace HyperMapper.Siren
                         //}
                         //else
                         {
-                            links.Add(new SirenDotNet.Link(link.Uri, RelsFromTerm(link.Term))
+                            links.Add(new SirenDotNet.Link(link.Uri, uriTermFinder(link.Term).ToString())
                             {
                                 Title = link.Name,
                             });
@@ -106,7 +106,7 @@ namespace HyperMapper.Siren
                     {
                         var operation = (Operation) pair;
                         {
-                            var action = new SirenDotNet.Action(operation.Name, operation.Uri)
+                            var action = new SirenDotNet.Action(uriTermFinder(operation.Term).ToString(), operation.Uri)
                             {
                                 Method = HttpVerbs.POST,
                                 Fields = operation.Parameters.Select(mp => new Field()
@@ -121,14 +121,14 @@ namespace HyperMapper.Siren
                     else
                     {
                         var property = (ValueProperty) pair;
-                        var isTitle = property.Term == Term.Title;
+                        var isTitle = property.Term == Terms.Title;
                         if (isTitle)
                         {
                             sirenTitle = property.Value.ToObject<string>();
                         }
                         else
                         {
-                            properties[property.Name.ToString()] = property.Value;
+                            properties[uriTermFinder(property.Term)] = property.Value;
                         }
                     }
                 }
@@ -152,10 +152,7 @@ namespace HyperMapper.Siren
             return entity;
         }
 
-        private string RelsFromTerm(Term terms)
-        {
-            return terms.ToString();
-        }
+      
 
         private FieldTypes LookupFieldType(MethodParameter.MethodParameterType type)
         {

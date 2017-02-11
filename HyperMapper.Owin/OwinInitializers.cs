@@ -15,7 +15,7 @@ namespace HyperMapper.Owin
     {
         public delegate Task AppFunc(IDictionary<string, object> env);
 
-        public static Func<AppFunc, AppFunc> UseRepresentors(Representor[] representors, RequestHandler requestHandler, string basePath)
+        public static Func<AppFunc, AppFunc> UseRepresentors(Representor[] representors, RequestHandler requestHandler, FindUriForTerm termUriFinder, string basePath)
         {
             return app => env =>
             {
@@ -23,12 +23,12 @@ namespace HyperMapper.Owin
                 if (!ctx.Request.Path.Value.StartsWith(basePath.ToString()))
                     return app(env);
 
-                return HandleRequest(representors, ctx, requestHandler);
+                return HandleRequest(representors, ctx, requestHandler, termUriFinder);
             };
         }
 
 
-        private static async Task HandleRequest(Representor[] settings, OwinContext ctx, RequestHandler requestHandler)
+        private static async Task HandleRequest(Representor[] settings, OwinContext ctx, RequestHandler requestHandler, FindUriForTerm termUriFinder)
         {
             RequestHandling.BindModel bindModel = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
             var request = new Request(Method.Parse(ctx.Request.Method), ctx.Request.Uri)
@@ -41,7 +41,7 @@ namespace HyperMapper.Owin
                 modelBindingFailedResponse => Task.FromResult(false), 
                 async representationResponse =>
                 {
-                    await ResponseWriter.Write(ctx, representationResponse.Representation, settings);
+                    await ResponseWriter.Write(ctx, representationResponse.Representation, termUriFinder, settings);
                     return true;
                 },
                 async createdResponse =>
@@ -50,7 +50,7 @@ namespace HyperMapper.Owin
                     {
                         //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term {new Term("ResultMessage"), }), 
                     };
-                    await ResponseWriter.Write(ctx, new Representation(ctx.Request.Uri, properties), settings);
+                    await ResponseWriter.Write(ctx, new Representation(ctx.Request.Uri, properties), termUriFinder, settings);
                     return true;
                 });
             

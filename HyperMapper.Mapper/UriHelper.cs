@@ -10,10 +10,7 @@ namespace HyperMapper.Mapper
     {
         public static Uri Combine(Uri left, string right)
         {
-
-            return
-                new Uri('/' + string.Join("/", (left.ToString() + '/' + right).Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries)), UriKind.Relative);
-
+            return  new Uri('/' + string.Join("/", (left.ToString() + '/' + right).Split(new[] {'/'}, StringSplitOptions.RemoveEmptyEntries)), UriKind.Relative);
         }
     }
 }

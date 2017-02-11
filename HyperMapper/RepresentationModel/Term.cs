@@ -2,6 +2,8 @@ using System;
 
 namespace HyperMapper.RepresentationModel
 {
+    public delegate Uri FindUriForTerm(Term term);
+
     public sealed class Term
     {
         protected bool Equals(Term other)
@@ -14,7 +16,7 @@ namespace HyperMapper.RepresentationModel
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != this.GetType()) return false;
-            return Equals((Term) obj);
+            return Equals((Term)obj);
         }
 
         public override int GetHashCode()
@@ -39,15 +41,19 @@ namespace HyperMapper.RepresentationModel
             _value = name;
         }
 
+        public string UrlPart => "_" + _value;
+        public string Title => _value;
+
         public override string ToString()
         {
-            return _value;
+            throw new Exception();
         }
-
+    }
+    public static class Terms
+    { 
         public static Term Title => new Term(nameof(Title));
         public static Term Parent => new Term(nameof(Parent));
         public static Term Child => new Term(nameof(Child));
-
 
     }
 }

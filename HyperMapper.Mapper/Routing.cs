@@ -30,23 +30,15 @@ namespace HyperMapper.Mapper
             };
         }
 
-
-
-        //public OneOf<Resource, OneOf.Types.None> GetChildByUriSegment(string part)
-        //{
-        //    foreach (var child in Children)
-        //    {
-        //        if (child.Follow != null && child.Uri.ToString() == this.Uri.ToString().TrimEnd('/') + "/" + part)
-        //            return child.Follow();
-        //    }
-
-        //    return new OneOf.Types.None();
-        //}
-
-        public static Router MakeHypermediaRouterFromRootNode(RootNode root, ServiceLocatorDelegate serviceLocator)
+ 
+        public static Router MakeHypermediaRouterFromRootNode(RootNode root, GlossaryNode glossaryNode, ServiceLocatorDelegate serviceLocator)
         {
             return url =>
             {
+                //route to the special glossary childnode
+                if (url.ToString().Split('/').FirstOrDefault() == glossaryNode.UrlPart)
+                    return Functions.MakeResourceFromNode(glossaryNode, serviceLocator);
+
                 var nodeRouter = Routing.RouteByWalkingNode(root);
                 return nodeRouter(url).Match<OneOf.OneOf<Resource, None>>(
                     node => Functions.MakeResourceFromNode(node, serviceLocator), none => none);

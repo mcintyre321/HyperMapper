@@ -52,6 +52,7 @@
     <Compile Include="RootNode.cs" />
     <Compile Include="Functions.cs" />
     <Compile Include="Routing.cs" />
+    <Compile Include="TermsNode.cs" />
     <Compile Include="UriHelper.cs" />
   </ItemGroup>
   <ItemGroup>

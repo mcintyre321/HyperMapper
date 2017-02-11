@@ -49,7 +49,7 @@ namespace HyperMapper.Mapper
                             c =>
                             {
                                 var uri = UriHelper.Combine(nodeUri, c.UrlPart.ToString());
-                                var term = Term.Child;
+                                var term = Terms.Child;
                                 return new Link(c.Title.ToString(), uri, term)
                                 {
                                     Follow = () => MakeResourceFromNode(c, serviceLocator)
@@ -62,7 +62,7 @@ namespace HyperMapper.Mapper
                 {
                     links = links.Concat(new[]
                     {
-                        new Link(node.Parent.Title, node.Parent.Uri, Term.Parent)
+                        new Link(node.Parent.Title, node.Parent.Uri, Terms.Parent)
                     });
                 }
 
@@ -89,7 +89,7 @@ namespace HyperMapper.Mapper
                         {
                             oneOfs.Add(property);
                         }
-                        oneOfs.Add(new ValueProperty("title", JToken.FromObject(node.Title), Term.Title));
+                        oneOfs.Add(new ValueProperty("title", JToken.FromObject(node.Title), Terms.Title));
 
                         var representation = new Representation(nodeUri, oneOfs);
 
@@ -214,7 +214,7 @@ namespace HyperMapper.Mapper
             return new MethodHandler(new Method.Get(), new MethodParameter[0], tuples =>
             {
                 HashSet<Property>  oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
-                oneOfs.Add(new ValueProperty("title", JToken.FromObject(methodInfoNode.Title), Term.Title));
+                oneOfs.Add(new ValueProperty("title", JToken.FromObject(methodInfoNode.Title), Terms.Title));
                 var representation = new Representation(methodInfoNode.Uri, oneOfs);
                 var representationResult = new InvokeResult.RepresentationResult(representation);
                 return Task.FromResult<InvokeResult>(representationResult);
@@ -224,7 +224,7 @@ namespace HyperMapper.Mapper
         private static HashSet<Property>  BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
         {
             var oneOfs = new HashSet<Property>  ();
-            oneOfs.Add(new Link(methodInfoNode.Parent.Title, methodInfoNode.Parent.Uri, Term.Parent));
+            oneOfs.Add(new Link(methodInfoNode.Parent.Title, methodInfoNode.Parent.Uri, Terms.Parent));
             var methodParameters =
                 methodInfoNode.MethodInfo.GetParameters()
                     .Where(pi => pi.GetCustomAttributes<InjectAttribute>().Any() == false)
@@ -290,7 +290,7 @@ namespace HyperMapper.Mapper
                 {
                     resourceElements.Add(new Link($"Created \'{node.Title}\'", node.Uri, node.Term));
                 }
-                resourceElements.Add(new ValueProperty("title", JToken.FromObject(methodNode.Title), Term.Title));
+                resourceElements.Add(new ValueProperty("title", JToken.FromObject(methodNode.Title), Terms.Title));
                 var representation = new Representation(methodNode.Uri, resourceElements);
                 return new InvokeResult.RepresentationResult(representation);
             };
