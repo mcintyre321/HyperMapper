@@ -9,15 +9,15 @@ namespace HyperMapper.Mapper
 {
     public class Routing
     {
-        public static Func<BaseUrlRelativePath, OneOf<INode, None>> RouteByWalkingNode(INode root)
+        public static Func<BaseUrlRelativePath, OneOf<AbstractNode, None>> RouteByWalkingNode(AbstractNode root)
         {
             return path =>
             {
                 var parts = path.GetParts();
 
                 return parts
-                    .Aggregate((OneOf<INode, None>) root,
-                        (node, part) => node.Match<OneOf<INode, None>>(
+                    .Aggregate((OneOf<AbstractNode, None>) root,
+                        (node, part) => node.Match<OneOf<AbstractNode, None>>(
                             childNode =>
                             {
                                 var child = childNode.GetChild(part);

@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace HyperMapper.Mapper
 {
-    public class GlossaryNode : INode
+    public class GlossaryNode : AbstractNode
     { 
-        Dictionary<Term, INode> terms = new Dictionary<Term, INode>();
-        INode parent;
-        public GlossaryNode(INode parent)
+        Dictionary<Term, AbstractNode> terms = new Dictionary<Term, AbstractNode>();
+        AbstractNode parent;
+        public GlossaryNode(AbstractNode parent)
         {
             this.parent = parent;
             this.terms.Add(TermFactory.From<GlossaryNode>(), new TermNode(this, TermFactory.From<GlossaryNode>()));
@@ -23,57 +23,29 @@ namespace HyperMapper.Mapper
             }
         }
 
-        public override INode Parent
-        {
-            get
-            {
-                return parent;
-            }
-        }
+        public override AbstractNode Parent => parent;
 
-        public override Term Term
-        {
-            get
-            {
-                return TermFactory.From<GlossaryNode>();
-            }
-        }
+        public override Term Term => TermFactory.From<GlossaryNode>();
 
         public Uri GetUriForTerm(Term term)
         {
-            INode node = null;
+            AbstractNode node = null;
             if (!terms.TryGetValue(term, out node))
             {
-                terms.Add(term, new TermNode(this, term));
+                var termNode = new TermNode(this, term);
+                terms.Add(term, termNode);
+                node = termNode;
             }
             return node.Uri;
         }
 
-        public override string Title
-        {
-            get
-            {
-                return "Glossary";
-            }
-        }
+        public override string Title => "Glossary";
 
-        public override Uri Uri
-        {
-            get
-            {
-                return UriHelper.Combine(parent.Uri, UrlPart.ToString());
-            }
-        }
+        public override Uri Uri => UriHelper.Combine(parent.Uri, UrlPart.ToString());
 
-        public override UrlPart UrlPart
-        {
-            get
-            {
-                return new UrlPart("_glossary");
-            }
-        }
+        public override UrlPart UrlPart => new UrlPart("_glossary");
 
-        public override INode GetChild(UrlPart key)
+        public override AbstractNode GetChild(UrlPart key)
         {
             return terms.Where(k => k.Key.UrlPart == key).Select(pair => pair.Value).SingleOrDefault();
         }
@@ -85,7 +57,7 @@ namespace HyperMapper.Mapper
     }
      
 
-    internal class TermNode : INode
+    internal class TermNode : AbstractNode
     {
         private GlossaryNode glossaryNode;
         private Term term;
@@ -98,7 +70,7 @@ namespace HyperMapper.Mapper
 
         public override IEnumerable<UrlPart> ChildKeys => Enumerable.Empty<UrlPart>();
 
-        public override INode Parent => glossaryNode;
+        public override AbstractNode Parent => glossaryNode;
 
         public override Term Term => TermFactory.From<TermNode>();
 
@@ -108,7 +80,7 @@ namespace HyperMapper.Mapper
 
         public override UrlPart UrlPart => term.UrlPart;
 
-        public override INode GetChild(UrlPart key)
+        public override AbstractNode GetChild(UrlPart key)
         {
             return null;
         }

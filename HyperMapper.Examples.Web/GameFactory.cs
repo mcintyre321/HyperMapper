@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using ChessEngine;
+using ChessDotNet;
 using HyperMapper.Mapper;
 using HyperMapper.RepresentationModel;
 
@@ -10,7 +10,7 @@ namespace HyperMapper.Examples.Web
 {
     public class GameFactory : RootNode
     {
-        Dictionary<string, ChessEngine.ChessGame> _games = new Dictionary<string, ChessGame>();
+        Dictionary<string, ChessDotNet.ChessGame> _games = new Dictionary<string, ChessGame>();
         public GameFactory(string title, Uri uri, Term term) : base(title, uri, term)
         {
         }
@@ -24,7 +24,7 @@ namespace HyperMapper.Examples.Web
             return new ChessGameNode(chessGame, this, new UrlPart(key));
         }
 
-        public override INode GetChild(UrlPart key)
+        public override AbstractNode GetChild(UrlPart key)
         {
             if (_games.ContainsKey(key.ToString()))
             {
@@ -49,17 +49,17 @@ namespace HyperMapper.Examples.Web
         public void MakeMove(MoveInfo moveInfo)
         {
             var move = _chessGame.Moves.Single(m =>
-                m.Piece.Square.X == moveInfo.OrigX &&
-                m.Piece.Square.Y == moveInfo.OrigY &&
-                m.Destination.X == moveInfo.DestX &&
-                m.Destination.Y == moveInfo.DestY
+                (int) m.OriginalPosition.Rank == moveInfo.OrigX &&
+                (int)m.OriginalPosition.File == moveInfo.OrigY &&
+                (int)m.NewPosition.Rank == moveInfo.DestX &&
+                (int)m.NewPosition.File == moveInfo.DestY
                 );
-            move.Apply();
+            _chessGame.ApplyMove(move, false);
         }
 
         public IEnumerable<MoveInfo> MakeMove_choices()
         {
-            return _chessGame.Moves.Select(m => new MoveInfo(m.Piece.Square.X, m.Piece.Square.Y, m.Destination.X, m.Destination.Y));
+            return _chessGame.Moves.Select(m => new MoveInfo(m.OriginalPosition.Rank, (int) m.OriginalPosition.File, m.NewPosition.Rank, (int) m.NewPosition.File, m.Promotion));
         }
         
         
@@ -74,13 +74,15 @@ namespace HyperMapper.Examples.Web
         public int OrigY { get; set; }
         public int DestX { get; set; }
         public int DestY { get; set; }
+        public char? Promotion { get; set; }
         public MoveInfo() { }
-        public MoveInfo(int origX, int origY, int destX, int destY)
+        public MoveInfo(int origX, int origY, int destX, int destY, char? promotion)
         {
             OrigX = origX;
             OrigY = origY;
             DestX = destX;
             DestY = destY;
+            Promotion = promotion;
         }
 
        

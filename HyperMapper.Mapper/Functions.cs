@@ -22,7 +22,7 @@ namespace HyperMapper.Mapper
             public Uri propertyUri { get; set; }
         }
 
-        public static Resource MakeResourceFromNode(INode node, ServiceLocatorDelegate serviceLocator)
+        public static Resource MakeResourceFromNode(AbstractNode node, ServiceLocatorDelegate serviceLocator)
         {
             var methodNode = node as MethodInfoNode;
 
@@ -105,7 +105,7 @@ namespace HyperMapper.Mapper
             }
         }
 
-        private static IEnumerable<Link> GetLinksFromTypeProperties(INode nodeAndUri,
+        private static IEnumerable<Link> GetLinksFromTypeProperties(AbstractNode nodeAndUri,
             ServiceLocatorDelegate serviceLocator,
             TypeInfo type)
         {
@@ -130,7 +130,7 @@ namespace HyperMapper.Mapper
                     //}
                     //else
                     {
-                        var value = (INode) x.propertyInfo.GetValue(node);
+                        var value = (AbstractNode) x.propertyInfo.GetValue(node);
                         //var rels = x.propertyInfo.GetCustomAttributes<RelAttribute>()
                         //    .Select(ra => Term(ra.RelString));
 
@@ -285,7 +285,7 @@ namespace HyperMapper.Mapper
                 }
 
                 var resourceElements = BuildResourceElementsFromMethodInfo(methodNode);
-                var node = result as INode;
+                var node = result as AbstractNode;
                 if (node != null)
                 {
                     resourceElements.Add(new Link($"Created \'{node.Title}\'", node.Uri, node.Term));
