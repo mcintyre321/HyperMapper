@@ -1,34 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using HyperMapper.ResourceModel;
-using OneOf;
-using OneOf.Types;
 
 namespace HyperMapper.RequestHandling
 {
-    public class BaseUrlRelativePath
+    public class RequestHandlerBuilder<TRep>
     {
-        private readonly string _path;
-
-        public BaseUrlRelativePath(string path)
-        {
-            _path = path;
-        }
-
-        public IEnumerable<UrlPart> GetParts()
-        {
-            return _path.Split('/')
-                    .Where(p => !String.IsNullOrEmpty(p))
-                    .Select(s => new UrlPart(s));
-        }
-    }
-
-    public delegate OneOf<Resource, None> Router(BaseUrlRelativePath path);
-    public class RequestHandlerBuilder
-    {
-        public RequestHandler MakeRequestHandler(Uri baseUri, Router router)
+        public RequestHandler<TRep> MakeRequestHandler(Uri baseUri, Router<TRep> router)
         {
             return async (request, modelBinder) =>
             {
@@ -44,16 +21,16 @@ namespace HyperMapper.RequestHandling
                             async handler =>
                             {
                                 var bindResult = await modelBinder(handler.Parameters);
-                                var response = await bindResult.Match<Task<Response>>(
-                                    failed => Task.FromResult<Response>(new Response.ModelBindingFailedResponse()),
+                                var response = await bindResult.Match(
+                                    failed => Task.FromResult<Response<TRep>>(new Response<TRep>.ModelBindingFailedResponse()),
                                     async boundModel => (await handler.Invoke(boundModel)).Match(
                                         representation =>
-                                            (Response) new Response.RepresentationResponse(representation.Representation)
+                                            (Response<TRep>) new Response<TRep>.RepresentationResponse(representation.Representation)
                                         ));
                                 return response;
                             },
-                            none => Task.FromResult((Response) new Response.MethodNotAllowed())),
-                    none => Task.FromResult((Response) new Response.NotFoundResponse()));
+                            none => Task.FromResult((Response<TRep>) new Response<TRep>.MethodNotAllowed())),
+                    none => Task.FromResult((Response<TRep>) new Response<TRep>.NotFoundResponse()));
             };
         }
     }

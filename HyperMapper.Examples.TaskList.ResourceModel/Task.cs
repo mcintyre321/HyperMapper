@@ -1,6 +1,9 @@
 using HyperMapper;
 using HyperMapper.Mapper;
+using HyperMapper.Mapping;
 using HyperMapper.RepresentationModel;
+using HyperMapper.ResourceModel;
+using HyperMapper.Vocab;
 
 namespace HyperMapper.Examples.TaskList.Domain
 {

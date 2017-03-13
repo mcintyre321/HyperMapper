@@ -5,36 +5,34 @@ using OneOf;
 
 namespace HyperMapper.RequestHandling
 {
-    public abstract class Response : OneOfBase<
-        Response.MethodNotAllowed,
-        Response.NotFoundResponse,
-        Response.ModelBindingFailedResponse,
-        Response.RepresentationResponse,
-        Response.CreatedResponse
+    public abstract class Response<TRep> : OneOfBase<
+        Response<TRep>.MethodNotAllowed,
+        Response<TRep>.NotFoundResponse,
+        Response<TRep>.ModelBindingFailedResponse,
+        Response<TRep>.RepresentationResponse,
+        Response<TRep>.CreatedResponse
         >
     {
-        public class MethodNotAllowed : Response { }
-        public class NotFoundResponse : Response { }
-        public class ModelBindingFailedResponse : Response { }
-        public class RepresentationResponse : Response
+        public class MethodNotAllowed : Response<TRep> { }
+        public class NotFoundResponse : Response<TRep> { }
+        public class ModelBindingFailedResponse : Response<TRep> { }
+        public class RepresentationResponse : Response<TRep>
         {
-            public Representation Representation { get; }
+            public TRep Representation { get; }
 
-            internal RepresentationResponse(Representation representation)
+            internal RepresentationResponse(TRep representation)
             {
                 Representation = representation;
             }
 
         }
-        public class CreatedResponse : Response
+        public class CreatedResponse : Response<TRep>
         {
-            public string Description { get; set; }
-            public Uri Uri { get; set; }
+            public TRep Representation { get; private set; }
 
-            public CreatedResponse(string description, Uri uri)
+            public CreatedResponse(TRep representation)
             {
-                Description = description;
-                Uri = uri;
+                Representation = representation;
             }
         }
 

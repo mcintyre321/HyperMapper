@@ -1,15 +1,14 @@
-using HyperMapper.RepresentationModel;
 using OneOf;
 
 namespace HyperMapper.ResourceModel
 {
-    public class InvokeResult : OneOfBase<InvokeResult.RepresentationResult>
+    public class InvokeResult<TRep> : OneOfBase<InvokeResult<TRep>.RepresentationResult>
     {
-        public class RepresentationResult : InvokeResult
+        public class RepresentationResult : InvokeResult<TRep>
         {
-            public Representation Representation { get; }
+            public TRep Representation { get; }
 
-            public RepresentationResult(Representation representation)
+            public RepresentationResult(TRep representation)
             {
                 Representation = representation;
             }

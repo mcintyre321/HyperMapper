@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using HyperMapper.RepresentationModel;
-using HyperMapper.RepresentationModel.Vocab;
 using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
+using HyperMapper.Vocab;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -13,12 +14,25 @@ using Newtonsoft.Json.Serialization;
 using OneOf;
 using SirenDotNet;
 using Action = SirenDotNet.Action;
-using Link = HyperMapper.RepresentationModel.Vocab.Link;
 
 namespace HyperMapper.Siren
 {
+    public class SirenHtmlRepresentor : Representor<SemanticDocument>
+    {
+        public override Tuple<string, string> GetResponse(SemanticDocument hypermediaObject, FindUriForTerm termUriFinder)
+        {
 
-    public class SirenRepresentor : Representor
+            var sirenRep = new SirenRepresentor();
+            var response = sirenRep.GetResponse(hypermediaObject, termUriFinder);
+            var index = new HyperMapper.Siren.Index() { Model = JToken.Parse(response.Item2) };
+            var transformText = index.TransformText();
+            return Tuple.Create("text/html", transformText);
+        }
+
+        public override IEnumerable<string> AcceptTypes { get; } = new[] { "text/html" };
+    }
+
+    public class SirenRepresentor : Representor<SemanticDocument>
     {
 
         public SirenRepresentor()
@@ -41,9 +55,9 @@ namespace HyperMapper.Siren
 
         
 
-        public override Tuple<string, string> GetResponse(Representation hypermediaObject, FindUriForTerm termUriFinder)
+        public override Tuple<string, string> GetResponse(SemanticDocument hypermediaObject, FindUriForTerm termUriFinder)
         {
-            var responseEntity = this.BuildFromHypermedia(hypermediaObject, termUriFinder);
+            var responseEntity = this.BuildFromSemanticDocument(hypermediaObject, termUriFinder);
             var serializerSettings = this.JsonSerializerSettings;
 
             var serializer = JsonSerializer.Create(serializerSettings);
@@ -54,85 +68,85 @@ namespace HyperMapper.Siren
 
         public override IEnumerable<string> AcceptTypes { get; } = new[] {"application/vnd.siren+json"};
 
-        public SirenDotNet.Entity BuildFromHypermedia(Representation representation, FindUriForTerm uriTermFinder)
+        public SirenDotNet.Entity BuildFromSemanticDocument(SemanticDocument semanticDocument, FindUriForTerm uriTermFinder)
         {
-            var links = new List<SirenDotNet.Link>()
-            {
-                new SirenDotNet.Link(representation.Uri, "self")
-            };
-
+            var links = new List<SirenDotNet.Link>();
             var actions = new List<Action>();
 
             var subEntities = new List<SubEntity>();
 
-            var properties = new JObject();
+            var jo = new JObject();
 
             string sirenTitle = null;
-
+            foreach (var property in semanticDocument.Value)
             {
-
-                foreach (var pair in representation.Children)
+                property.Value.Switch(set =>
                 {
-                    if (pair is Link)
+                    if (property.Term == TermFactory.From<Operation>())
                     {
-                        var link = (Link) pair;
-                        //if (link.Classes?.Contains("operation") ?? false)
-                        //{
-                        //    var operationResource = link.Follow();
-
-                        //    var posttHandler = operationResource.GetMethodHandler(new Method.Post()).AsT0;
-
-                        //    var action = new SirenDotNet.Action(link.Text, link.Uri)
-                        //    {
-                        //        Class = link.Classes,
-                        //        Method = HttpVerbs.POST,
-                        //        Fields = posttHandler.Parameters.Select(mp => new Field()
-                        //        {
-                        //            Name = mp.UrlPart.ToString(),
-                        //            Type = LookupFieldType(mp.Type)
-                        //        })
-                        //    };
-                        //    actions.Add(action);
-                        //}
-                        //else
+                        Func<SemanticProperty, Field> buildField = mp =>
                         {
-                            links.Add(new SirenDotNet.Link(link.Uri, uriTermFinder(link.Term).ToString())
+                            var fieldKind = mp.Value.AsT0[TermFactory.From<FieldKind>()].Value.AsT1.Value<string>();
+
+                            var sirenFieldType = new SirenDotNet.FieldTypes(fieldKind);
+
+                            //if (mp.Type.IsT2)
+                            //{
+                            //    field.ExtensionData["options"] =
+                            //        mp.Type.AsT2.Options.Select(o => new { name = o.Description, value = o.OptionId });
+                            //}
+
+
+                            var field = new Field()
                             {
-                                Title = link.Name,
-                            });
-                        }
-                    }
-                    else if (pair is Operation)
-                    {
-                        var operation = (Operation) pair;
-                        {
-                            var action = new SirenDotNet.Action(uriTermFinder(operation.Term).ToString(), operation.Uri)
-                            {
-                                Method = HttpVerbs.POST,
-                                Fields = operation.Parameters.Select(mp => new Field()
-                                {
-                                    Name = mp.UrlPart.ToString(),
-                                    Type = LookupFieldType(mp.Type)
-                                })
+                                Name = mp.Value.AsT0[TermFactory.From<FieldName>()].Value.AsT1.Value<string>(),
+                                Type = sirenFieldType
                             };
-                            actions.Add(action);
-                        }
+
+                            return field;
+                        };
+                        ;
+                        var href = new Uri(set[TermFactory.From<Operation.ActionUrl>()].Value.AsT1.Value<string>());
+                        var action = new SirenDotNet.Action(uriTermFinder(property.Term).ToString(), href)
+                        {
+                            Method = HttpVerbs.POST,
+                            Title = set[TermFactory.From<DisplayName>()].Value.AsT1.Value<string>(),
+                            //TODO Fields = property.Parameters.Select(buildField),
+                        };
+                        actions.Add(action);
+                    }
+                    if (property.Term.Means(TermFactory.From<Vocab.Link>()))
+                    {
+                        var href = set[TermFactory.From<Vocab.Link.Href>()].Value.AsT1.Value<string>();
+                        var displayName = set[TermFactory.From<DisplayName>()].Value.AsT1.Value<string>();
+                        var rel = set[TermFactory.From<Vocab.Link.Rel>()].Value.AsT2;
+                        var action = new SirenDotNet.Link(uriTermFinder(rel), href)
+                        {
+                            Title = displayName
+                        };
+                        links.Add(action);
+                    }
+
+                },
+                value =>
+                {
+                    var isTitle = property.Term == Terms.Title;
+                    if (isTitle)
+                    {
+                        sirenTitle = value.ToObject<string>();
                     }
                     else
                     {
-                        var property = (ValueProperty) pair;
-                        var isTitle = property.Term == Terms.Title;
-                        if (isTitle)
-                        {
-                            sirenTitle = property.Value.ToObject<string>();
-                        }
-                        else
-                        {
-                            properties[uriTermFinder(property.Term)] = property.Value;
-                        }
+                        jo[uriTermFinder(property.Term)] = value;
                     }
-                }
+                },
+                term => { },
+                list =>
+                {
+
+                });
             }
+
 
 
             if (sirenTitle == null)
@@ -143,28 +157,13 @@ namespace HyperMapper.Siren
             var entity = new SirenDotNet.Entity
             {
                 Title = sirenTitle,
-                //Class = representation.Class?.Select(c => c.ToString()),
+                //Class = semanticDocument.Class?.Select(c => c.ToString()),
                 Links = links.Any() ? links : null,
                 Actions = actions.Any() ? actions : null,
                 Entities = subEntities.Any() ? subEntities : null,
-                Properties = properties.HasValues ? properties : null
+                Properties = jo.HasValues ? jo : null
             };
             return entity;
-        }
-
-      
-
-        private FieldTypes LookupFieldType(MethodParameter.MethodParameterType type)
-        {
-            switch (type)
-            {
-                case MethodParameter.MethodParameterType.Text:
-                    return FieldTypes.Text;
-                case MethodParameter.MethodParameterType.Password:
-                    return FieldTypes.Password;
-                default:
-                    throw new NotImplementedException();
-            }
         }
 
 
@@ -177,7 +176,7 @@ namespace HyperMapper.Siren
         //        Type = operation.ContentType,
         //        Fields = operation.Fields.Select(f => new Field(f.UrlPart.ToString())
         //        {
-        //            Value = f.Value,
+        //            _items = f._items,
         //            Type = FieldTypes.Text
         //        }),
         //        Href = operation.Href,

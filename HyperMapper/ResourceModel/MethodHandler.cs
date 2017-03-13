@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace HyperMapper.ResourceModel
 {
-    public class MethodHandler
+    public class MethodHandler<TRep>
     {
-        public delegate Task<InvokeResult> InvokeMethodDelegate(IEnumerable<Tuple<UrlPart, object>>  args);
+        public delegate Task<InvokeResult<TRep>> InvokeMethodDelegate(IEnumerable<Tuple<UrlPart, object>>  args);
         private readonly InvokeMethodDelegate _invoke;
 
         public MethodHandler(Method method, MethodParameter[] parameters, InvokeMethodDelegate invoke)
@@ -19,7 +19,7 @@ namespace HyperMapper.ResourceModel
         public MethodParameter[] Parameters { get; }
         public Method Method { get; }
 
-        public Task<InvokeResult> Invoke(MethodArguments args)
+        public Task<InvokeResult<TRep>> Invoke(MethodArguments args)
         {
             return _invoke(args.Args);
         }

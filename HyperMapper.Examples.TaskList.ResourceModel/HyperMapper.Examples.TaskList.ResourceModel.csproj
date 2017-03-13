@@ -45,10 +45,6 @@
     <Compile Include="Authentication.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HyperMapper.Mapper\HyperMapper.Mapper.csproj">
-      <Project>{2E0AA9C3-D058-46CE-9DDF-9C1C083E19A7}</Project>
-      <Name>HyperMapper.Mapper</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Hypermapper\HyperMapper.csproj">
       <Project>{410e2f8d-4641-4f94-867c-aae2768c75bd}</Project>
       <Name>HyperMapper</Name>

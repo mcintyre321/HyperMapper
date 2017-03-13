@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using HyperMapper.Helpers;
+using HyperMapper.Mapping;
 using HyperMapper.RepresentationModel;
-using HyperMapper.RepresentationModel.Vocab;
-using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
+using HyperMapper.Vocab;
 using Newtonsoft.Json.Linq;
-using OneOf;
+using Link = HyperMapper.Vocab.Link;
 
 namespace HyperMapper.Mapper
 {
@@ -22,13 +21,13 @@ namespace HyperMapper.Mapper
             public Uri propertyUri { get; set; }
         }
 
-        public static Resource MakeResourceFromNode(AbstractNode node, ServiceLocatorDelegate serviceLocator)
+        public static Resource<SemanticDocument> MakeResourceFromNode(AbstractNode node, ServiceLocatorDelegate serviceLocator)
         {
             var methodNode = node as MethodInfoNode;
 
             if (methodNode != null)
             {
-                var resource = new Resource(new[]
+                var resource = new Resource<SemanticDocument>(new[]
                 {
                     BuildGetHandlerForMethodInfo(methodNode),
                     BuildPostHandlerForMethodInfo(methodNode, serviceLocator)
@@ -39,20 +38,19 @@ namespace HyperMapper.Mapper
             {
                 var type = node.GetType().GetTypeInfo();
                 var nodeUri = node.Uri;
-                //var linkedChildResources = GetLinksFromTypeProperties(node, nodeUri, serviceLocator, type);
                 //var linkedActionResources = Functions.GetLinksFromTypeMethods(type, nodeUri, node, serviceLocator,
                 //    node);
 
                 var childLinks =
-                    node.ChildKeys.Select(key => node.GetChild(key))
+                    node.ChildKeys.Select(node.GetChild)
                         .Select(
                             c =>
                             {
                                 var uri = UriHelper.Combine(nodeUri, c.UrlPart.ToString());
                                 var term = Terms.Child;
-                                return new Link(c.Title.ToString(), uri, term)
+                                return Link.Create(c.Title.ToString(), uri, term);
                                 {
-                                    Follow = () => MakeResourceFromNode(c, serviceLocator)
+                                    //Follow = () => MakeResourceFromNode(c, serviceLocator)
                                 };
                             });
 
@@ -62,50 +60,54 @@ namespace HyperMapper.Mapper
                 {
                     links = links.Concat(new[]
                     {
-                        new Link(node.Parent.Title, node.Parent.Uri, Terms.Parent)
+                        Link.Create(node.Parent.Title, node.Parent.Uri, Terms.Parent)
                     });
                 }
 
 
                 var methodHandlers = new[]
                 {
-                    new MethodHandler(new Method.Get(), new MethodParameter[0], arguments =>
+                    new MethodHandler<SemanticDocument>(new Method.Get(), new MethodParameter[0], arguments =>
                     {
-                        var oneOfs = new HashSet<Property> ();
+                        var doc = new SemanticDocument();
+
+                        
                         foreach (var link in links)
                         {
-                            oneOfs.Add(link);
+                            doc.Value.Add(link);
                         }
 
-                        var properties = MarkedUpProperties(nodeUri, type)
+                        var markedUpProps = MarkedUpProperties(nodeUri, type)
                             .Where(IsSimpleProperty)
-                            .Select(
-                                x =>
-                                    new ValueProperty(x.propertyInfo.Name,
-                                        JToken.FromObject(x.propertyInfo.GetValue(node)),
-                                        TermFactory.From(x.propertyInfo)));
+                            .Select(x => new SemanticProperty(TermFactory.From(x.propertyInfo), JToken.FromObject(x.propertyInfo.GetValue(node))));
 
-                        foreach (var property in properties)
+                        foreach (var property in markedUpProps)
                         {
-                            oneOfs.Add(property);
+                            doc.Value.Add(property);
                         }
-                        oneOfs.Add(new ValueProperty("title", JToken.FromObject(node.Title), Terms.Title));
 
-                        var representation = new Representation(nodeUri, oneOfs);
+                        foreach (var hyperlink in (node as IHasHyperlinks)?.Hyperlinks ?? Enumerable.Empty<Tuple<Term, Uri, string>>())
+                        {
+                            var semanticProperty = Link.Create(hyperlink.Item3, hyperlink.Item2, hyperlink.Item1);
+                            doc.Value.Add(semanticProperty);
+                        }
 
-                        return Task.FromResult<InvokeResult>(new InvokeResult.RepresentationResult(representation));
+                        doc.Value.Add(new SemanticProperty(Terms.Title, JToken.FromObject(node.Title)));
+
+
+                        return Task.FromResult<InvokeResult<SemanticDocument>>(new InvokeResult<SemanticDocument>.RepresentationResult(doc));
                     })
                 };
 
 
 
-                var entity = new Resource(methodHandlers.ToArray());
+                var entity = new Resource<SemanticDocument>(methodHandlers.ToArray());
 
                 return entity;
             }
         }
 
-        private static IEnumerable<Link> GetLinksFromTypeProperties(AbstractNode nodeAndUri,
+        private static IEnumerable<SemanticProperty> GetLinksFromTypeProperties(AbstractNode nodeAndUri,
             ServiceLocatorDelegate serviceLocator,
             TypeInfo type)
         {
@@ -139,9 +141,9 @@ namespace HyperMapper.Mapper
                         //    rels = rels.Append(new Term("child"));
                         //}
 
-                        return new Link(x.propertyInfo.Name, x.propertyUri, TermFactory.From(x.propertyInfo))
+                        return Link.Create(x.propertyInfo.Name, x.propertyUri, TermFactory.From(x.propertyInfo));
                         {
-                            Follow = () => MakeResourceFromNode(value, serviceLocator)
+                            //Follow = () => MakeResourceFromNode(value, serviceLocator)
                         };
                     }
                 });
@@ -165,84 +167,47 @@ namespace HyperMapper.Mapper
             return arg.propertyInfo.PropertyType == typeof(string);
         }
 
-        private static bool IsChildUri(Uri nodeUri, Uri childUri)
-        {
-            return childUri.ToString().StartsWith(nodeUri.ToString());
-        }
-
         private static bool IsLinkedResource(MarkedUpProperty x)
         {
             return x.propertyInfo.PropertyType != typeof(string);
         }
 
 
-        //static IEnumerable<Link> GetLinksFromTypeMethods(TypeInfo type, Uri nodeUri, object node, Func<Type, object> serviceLocator, INode parentNodeAndUri)
-        //{
-        //    return type.DeclaredMethods.Where(x => x.GetCustomAttributes<ExposeAttribute>().Any())
-        //        .Select(methodInfo => new
-        //        {
-        //            methodInfo,
-        //            methodUri = new Uri((nodeUri.ToString() + "/" + methodInfo.Name), UriKind.Relative)
-        //        })
-        //        .Select(pair => new Link(
-        //            pair.methodInfo.Name,
-
-        //            new Rel[] {new Rel("operation"), new Rel(pair.methodInfo.Name)},
-        //            pair.methodUri)
-        //        {
-        //            Follow = () => BuildFromMethodInfo(node, pair.methodUri, pair.methodInfo, serviceLocator, parentNodeAndUri),
-        //            Classes = new [] { "operation"}
-        //        });
-        //}
-
-        private static string[] GetClasses(TypeInfo type)
+        private static MethodHandler<SemanticDocument> BuildGetHandlerForMethodInfo(MethodInfoNode methodInfoNode)
         {
-            return type
-                .Recurse(t => IntrospectionExtensions.GetTypeInfo(t.BaseType))
-                .TakeWhile(t => t.BaseType != null)
-                .Where(
-                    t =>
-                        t.AsType() != typeof(object) &&
-                        (t.GetCustomAttribute<HyperMapperAttribute>(false)?.UseTypeNameAsClassNameForEntity ?? true))
-                .Select(t => t.Name).ToArray();
-        }
-
-     
-
-        private static MethodHandler BuildGetHandlerForMethodInfo(MethodInfoNode methodInfoNode)
-        {
-            return new MethodHandler(new Method.Get(), new MethodParameter[0], tuples =>
+            return new MethodHandler<SemanticDocument>(new Method.Get(), new MethodParameter[0], tuples =>
             {
-                HashSet<Property>  oneOfs = BuildResourceElementsFromMethodInfo(methodInfoNode);
-                oneOfs.Add(new ValueProperty("title", JToken.FromObject(methodInfoNode.Title), Terms.Title));
-                var representation = new Representation(methodInfoNode.Uri, oneOfs);
-                var representationResult = new InvokeResult.RepresentationResult(representation);
-                return Task.FromResult<InvokeResult>(representationResult);
+                var semanticProperties = BuildResourceElementsFromMethodInfo(methodInfoNode).ToList();
+                semanticProperties.Add(new SemanticProperty(Terms.Title, JToken.FromObject(methodInfoNode.Title)));
+                var objectProperty = new SemanticDocument();
+                foreach (var semanticProperty in semanticProperties)
+                {
+                    objectProperty.Value.Add(semanticProperty);
+                }
+
+                var representationResult = new InvokeResult<SemanticDocument>.RepresentationResult(objectProperty);
+                return Task.FromResult<InvokeResult<SemanticDocument>>(representationResult);
             });
         }
 
-        private static HashSet<Property>  BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
+        private static IEnumerable<SemanticProperty> BuildResourceElementsFromMethodInfo(MethodInfoNode methodInfoNode)
         {
-            var oneOfs = new HashSet<Property>  ();
-            oneOfs.Add(new Link(methodInfoNode.Parent.Title, methodInfoNode.Parent.Uri, Terms.Parent));
-            var methodParameters =
-                methodInfoNode.MethodInfo.GetParameters()
-                    .Where(pi => pi.GetCustomAttributes<InjectAttribute>().Any() == false)
-                    .Select(pi => new MethodParameter(pi.Name, BuildFromParameterInfo(pi)));
+            yield return Link.Create(methodInfoNode.Parent.Title, methodInfoNode.Parent.Uri, Terms.Parent);
+            var methodParameters = methodInfoNode.GetParameters();
             var term = TermFactory.From(methodInfoNode.MethodInfo);
-            var operation = new Operation(methodInfoNode.Title, methodParameters, methodInfoNode.Uri, term);
-            oneOfs.Add(operation);
-            return oneOfs;
+            var operation = Operation.Create(methodInfoNode.Title, methodParameters, methodInfoNode.Uri, term);
+            yield return operation;
         }
 
         private static MethodParameter.MethodParameterType BuildFromParameterInfo(ParameterInfo pi)
         {
-            return MethodParameter.MethodParameterType.Text;
+            return new MethodParameter.MethodParameterType.Text();
         }
 
-        private static MethodHandler BuildPostHandlerForMethodInfo(MethodInfoNode methodNode, ServiceLocatorDelegate serviceLocator)
+        private static MethodHandler<SemanticDocument> BuildPostHandlerForMethodInfo(MethodInfoNode methodNode,
+            ServiceLocatorDelegate serviceLocator)
         {
-            MethodHandler.InvokeMethodDelegate invoke = async (submittedArgs) =>
+            MethodHandler<SemanticDocument>.InvokeMethodDelegate invoke2 = async (submittedArgs) =>
             {
                 var argsEnumerator = submittedArgs.GetEnumerator();
                 var argsList = methodNode.MethodInfo.GetParameters()
@@ -252,7 +217,8 @@ namespace HyperMapper.Mapper
                         {
                             if (serviceLocator == null)
                             {
-                                throw new InvalidOperationException($"Cannot [Inject] parameter {pi.Name} for {methodNode.MethodInfo.DeclaringType.Name}.{methodNode.MethodInfo.DeclaringType.Name} Please set ServiceLocator at startup");
+                                throw new InvalidOperationException(
+                                    $"Cannot [Inject] parameter {pi.Name} for {methodNode.MethodInfo.DeclaringType.Name}.{methodNode.MethodInfo.DeclaringType.Name} Please set ServiceLocator at startup");
                             }
                             return serviceLocator(pi.ParameterType);
                         }
@@ -283,24 +249,23 @@ namespace HyperMapper.Mapper
                     await task;
                     result = task.GetType().GetRuntimeProperty("Result")?.GetValue(task) ?? result;
                 }
-
-                var resourceElements = BuildResourceElementsFromMethodInfo(methodNode);
+                var representation = new SemanticDocument();
+                foreach (var semanticProperty in BuildResourceElementsFromMethodInfo(methodNode).ToList())
+                {
+                    representation.Value.Add(semanticProperty);
+                }
                 var node = result as AbstractNode;
                 if (node != null)
                 {
-                    resourceElements.Add(new Link($"Created \'{node.Title}\'", node.Uri, node.Term));
+                    representation.Value.Add(Link.Create($"Created \'{node.Title}\'", node.Uri, node.Term));
                 }
-                resourceElements.Add(new ValueProperty("title", JToken.FromObject(methodNode.Title), Terms.Title));
-                var representation = new Representation(methodNode.Uri, resourceElements);
-                return new InvokeResult.RepresentationResult(representation);
+                representation.Value.Add(new SemanticProperty(Terms.Title, JToken.FromObject(methodNode.Title)));
+                return new InvokeResult<SemanticDocument>.RepresentationResult(representation);
             };
 
-            var parameterInfo = methodNode.MethodInfo.GetParameters()
-                .Where(mi => mi.GetCustomAttribute<InjectAttribute>() == null)
-                .Select(pi => new MethodParameter(pi.Name, MethodParameter.MethodParameterType.Text)).ToArray();
+            var parameterInfo = methodNode.GetParameters();
 
-
-            return new MethodHandler(new Method.Post(), parameterInfo, invoke);
+            return new MethodHandler<SemanticDocument>(new Method.Post(), parameterInfo, invoke2);
         }
     }
 }

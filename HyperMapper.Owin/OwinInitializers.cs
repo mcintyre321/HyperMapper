@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using HyperMapper.RepresentationModel;
-using HyperMapper.RepresentationModel.Vocab;
 using HyperMapper.RequestHandling;
 using HyperMapper.ResourceModel;
 using Microsoft.Owin;
@@ -15,7 +14,7 @@ namespace HyperMapper.Owin
     {
         public delegate Task AppFunc(IDictionary<string, object> env);
 
-        public static Func<AppFunc, AppFunc> UseRepresentors(Representor[] representors, RequestHandler requestHandler, FindUriForTerm termUriFinder, string basePath)
+        public static Func<AppFunc, AppFunc> UseRepresentors<TRep>(Representor<TRep>[] representors, RequestHandler<TRep> requestHandler, FindUriForTerm termUriFinder, string basePath)
         {
             return app => env =>
             {
@@ -28,7 +27,7 @@ namespace HyperMapper.Owin
         }
 
 
-        private static async Task HandleRequest(Representor[] settings, OwinContext ctx, RequestHandler requestHandler, FindUriForTerm termUriFinder)
+        private static async Task HandleRequest<TRep>(Representor<TRep>[] representors, OwinContext ctx, RequestHandler<TRep> requestHandler, FindUriForTerm termUriFinder)
         {
             RequestHandling.BindModel bindModel = args => ModelBinder.BindArgsFromRequest(args, ctx.Request);
             var request = new Request(Method.Parse(ctx.Request.Method), ctx.Request.Uri)
@@ -41,16 +40,17 @@ namespace HyperMapper.Owin
                 modelBindingFailedResponse => Task.FromResult(false), 
                 async representationResponse =>
                 {
-                    await ResponseWriter.Write(ctx, representationResponse.Representation, termUriFinder, settings);
+                    await ResponseWriter.Write(ctx, representationResponse.Representation, termUriFinder, representors);
                     return true;
                 },
                 async createdResponse =>
                 {
-                    HashSet<Property> properties = new HashSet<Property>()
+                    HashSet<SemanticDocument> properties = new HashSet<SemanticDocument>()
                     {
                         //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term {new Term("ResultMessage"), }), 
                     };
-                    await ResponseWriter.Write(ctx, new Representation(ctx.Request.Uri, properties), termUriFinder, settings);
+                    //TODO var new Representation(ctx.Request.Uri, properties)
+                    await ResponseWriter.Write(ctx, createdResponse.Representation, termUriFinder, representors);
                     return true;
                 });
             
