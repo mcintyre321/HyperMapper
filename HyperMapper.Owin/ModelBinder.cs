@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Threading.Tasks;
 using HttpMultipartParser;
 using HyperMapper.RequestHandling;
@@ -20,6 +21,11 @@ namespace HyperMapper.Owin
         {
             if (parameters.Length == 0) return new MethodArguments(new Tuple<UrlPart, object>[0]);
 
+            return  MakeMethodArgs(parameters, await BindToJObject(request));
+        }
+
+        private static async Task<JObject> BindToJObject(IOwinRequest request)
+        {
             switch (request.ContentType.Split(';')[0])
             {
                 case "application/json":
@@ -27,13 +33,9 @@ namespace HyperMapper.Owin
                     using (var sr = new StreamReader(request.Body))
                     {
                         var rawBody = await sr.ReadToEndAsync();
-                        var jObject = JObject.Parse(rawBody);
-                        var tuples = parameters
-                            .Select(
-                                methodParameter =>
-                                    Tuple.Create(methodParameter.UrlPart, jObject[methodParameter.UrlPart.ToString()]?.ToObject(FieldTypeToTypeLookup(methodParameter.Type))))
-                            .ToArray();
-                        return new MethodArguments(tuples);
+                        {
+                            return JObject.Parse(rawBody);
+                        }
                     }
                 }
                 case "application/x-www-form-urlencoded":
@@ -41,40 +43,41 @@ namespace HyperMapper.Owin
                     {
                         var rawBody = await sr.ReadToEndAsync();
                         var dict = QueryStringHelper.QueryStringToDict(rawBody);
-                        var jObject = JObject.Parse(JsonConvert.SerializeObject(dict));
-                        return new MethodArguments(parameters
-                            .Select(ai => Tuple.Create(ai.UrlPart, jObject[ai.UrlPart.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
-                            .ToArray());
+                        return JObject.Parse(JsonConvert.SerializeObject(dict));
                     }
-                    break;
                 case "multipart/form-data":
                     var parser = new MultipartFormDataParser(request.Body);
 
-                    var multiPartJObject = new JObject();
+                    var jo = new JObject();
                     foreach (var parameterPart in parser.Parameters)
                     {
-                        multiPartJObject[parameterPart.Name] = parameterPart.Data;
+                        jo[parameterPart.Name] = parameterPart.Data;
                     }
-                    return new MethodArguments(parameters
-                        .Select(ai => Tuple.Create(ai.UrlPart, multiPartJObject[ai.UrlPart.ToString()]?.ToObject(FieldTypeToTypeLookup(ai.Type))))
-                        .ToArray());
-
-                    break;
-            }
-            throw new NotImplementedException();
-        }
-
-        private static Type FieldTypeToTypeLookup(MethodParameter.MethodParameterType methodParameter)
-        {
-            switch (methodParameter)
-            {
-                case MethodParameter.MethodParameterType.Text:
-                    return typeof(string);
-                case MethodParameter.MethodParameterType.Password:
-                    return typeof(string);
+                    return jo;
                 default:
                     throw new NotImplementedException();
             }
+        }
+
+        private static OneOf<ModelBindingFailed, MethodArguments> MakeMethodArgs(MethodParameter[] parameters, JObject jo)
+        {
+            var tuples = parameters
+                .Select(mp => Tuple.Create(mp.UrlPart, FieldTypeToTypeLookup(mp, jo[mp.UrlPart.ToString()]))).ToArray();
+            return new MethodArguments(tuples);
+        }
+
+        private static object FieldTypeToTypeLookup(MethodParameter methodParameter, JToken token)
+        {
+            return methodParameter.Type.Match(
+                text => token.Value<string>(),
+                password => token.Value<string>(),
+                select =>
+                {
+                    var options = select.Options;
+                    var selectedHash = token.Value<string>();
+                    return options.Single(oah => oah.OptionId == selectedHash).UnderlyingValue;
+                }
+            );
         }
     }
 

@@ -1,9 +1,9 @@
 ﻿using System;
-using HyperMapper.RepresentationModel;
+using HyperMapper.Mapper;
+using HyperMapper.Vocab;
 
-namespace HyperMapper.Mapper
+namespace HyperMapper.Mapping
 {
-    [HyperMapper(UseTypeNameAsClassNameForEntity = false)]
     public class RootNode : Node
     {
         private readonly Uri _uri;
@@ -12,6 +12,10 @@ namespace HyperMapper.Mapper
         public RootNode(string title, Uri uri, Term term) : base(title, term)
         {
             _uri = uri;
+            GlossaryNode = new GlossaryNode(this);
+            this.AddChild(GlossaryNode);
         }
+
+        public GlossaryNode GlossaryNode { get; }
     }
 }

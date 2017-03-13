@@ -56,13 +56,13 @@
       <HintPath>..\packages\RazorGenerator.Templating.2.3.11\lib\portable-Profile328\RazorGenerator.Templating.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="SirenDotNet, Version=1.1.32.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SirenDotNet.1.1.32\lib\portable45-net45+win8+wp8+wpa81\SirenDotNet.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="SirenDotNet, Version=1.1.33.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SirenDotNet.1.1.33\lib\portable45-net45+win8+wp8+wpa81\SirenDotNet.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="config.nsdepcop" />
     <None Include="Index.cshtml">
       <Generator>RazorGenerator</Generator>
       <LastGenOutput>Index.generated.cs</LastGenOutput>

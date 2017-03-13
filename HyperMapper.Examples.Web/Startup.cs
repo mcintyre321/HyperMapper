@@ -3,9 +3,12 @@ using System.Linq;
 using HyperMapper.Examples.TaskList.Domain;
 using HyperMapper.Examples.TaskList.Domain.Ports;
 using HyperMapper.Examples.Web;
+using HyperMapper.Examples.Web.Apps;
 using HyperMapper.Mapper;
 using HyperMapper.Owin;
 using HyperMapper.RepresentationModel;
+using HyperMapper.Siren;
+using HyperMapper.Vocab;
 using Microsoft.Owin;
 using Owin;
 
@@ -17,19 +20,19 @@ namespace HyperMapper.Examples.Web
     {
         public void Configuration(IAppBuilder app)
         {
-            {
-                var taskListAppRoot = BuildTaskListAppRoot(new Uri("/tasks", UriKind.Relative));
-                var glossaryNode = new GlossaryNode(taskListAppRoot);
+            var representors = new Representor<SemanticDocument>[] { new Siren.SirenRepresentor(), new SirenHtmlRepresentor() };
 
-                RequestHandling.Router taskListRouter = Routing.MakeHypermediaRouterFromRootNode(taskListAppRoot, glossaryNode, LocateAdaptors);
-                app.RouteWithRepresentors(taskListRouter, term => glossaryNode.GetUriForTerm(term), new Representor[] {new Siren.SirenRepresentor()}, taskListAppRoot.Uri.ToString());
-            }
-            {
-                var chessAppRoot = new GameFactory("GF", new Uri("/chess", UriKind.Relative),                     TermFactory.From<GameFactory>());
-                var glossaryNode = new GlossaryNode(chessAppRoot);
-                RequestHandling.Router chessRouter = Routing.MakeHypermediaRouterFromRootNode(chessAppRoot, glossaryNode, LocateAdaptors);
-                app.RouteWithRepresentors(chessRouter, term => glossaryNode.GetUriForTerm(term), new Representor[] {new Siren.SirenRepresentor()}, chessAppRoot.Uri.ToString());
-            }
+            var taskListAppRoot = BuildTaskListAppRoot(new Uri("/tasks", UriKind.Relative));
+            app.ExposeRootNodeAsHypermediaApi(taskListAppRoot, LocateAdaptors, representors);
+
+
+            var chessAppRoot = new ChessEngineApp("ChessEngine", new Uri("/chess", UriKind.Relative), TermFactory.From<ChessEngineApp>());
+            app.ExposeRootNodeAsHypermediaApi(chessAppRoot, LocateAdaptors, representors);
+
+            var indexAppRoot = new IndexRootNode("Index", new Uri("/", UriKind.Relative));
+            indexAppRoot.AddLink("chess engine app", chessAppRoot.Uri, TermFactory.From<ChessEngineApp>());
+            indexAppRoot.AddLink("task list app", taskListAppRoot.Uri, TermFactory.From<TaskListAppRoot>());
+            app.ExposeRootNodeAsHypermediaApi(indexAppRoot, LocateAdaptors, representors);
 
         }
 

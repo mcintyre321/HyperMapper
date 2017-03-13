@@ -1,5 +1,10 @@
+using System;
+using System.Collections.Generic;
+using HyperMapper.RepresentationModel;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
+using OneOf;
 
 namespace HyperMapper.ResourceModel
 {
@@ -16,11 +21,31 @@ namespace HyperMapper.ResourceModel
         public UrlPart UrlPart { get; private set; }
         public MethodParameterType Type { get; private set; }
 
-        [JsonConverter(typeof(StringEnumConverter))]
-        public enum MethodParameterType
+        
+        public class MethodParameterType : OneOfBase<MethodParameterType.Text, MethodParameterType.Password, MethodParameterType.Select>
         {
-            Text,
-            Password
+            
+            public class Text : MethodParameterType { }
+
+            public class Password : MethodParameterType { }
+
+            public class Select : MethodParameterType
+            {
+                public Select(IEnumerable<Option> options)
+                {
+                    Options = options;
+                }
+
+                public IEnumerable<Option> Options { get; }
+
+                public class Option
+                {
+                    public string Description { get; set; }
+                    public string OptionId { get; set; }
+                    [JsonIgnore]
+                    public object UnderlyingValue { get; set; }
+                }
+            }
         }
     }
 

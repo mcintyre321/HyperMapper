@@ -15,6 +15,8 @@
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <TargetFrameworkProfile>Profile259</TargetFrameworkProfile>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,21 +37,47 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
-    <Compile Include="RepresentationModel\TermFactory.cs" />
-    <Compile Include="RepresentationModel\Vocab\ValueProperty.cs" />
-    <Compile Include="RepresentationModel\Vocab\Operation.cs" />
-    <Compile Include="RepresentationModel\Term.cs" />
+    <Compile Include="Helpers\ThenExtension.cs" />
+    <Compile Include="Mapper\DefaultServiceLocatorDelegate.cs" />
+    <Compile Include="Mapper\ServiceLocatorDelegate.cs" />
+    <Compile Include="Mapper\TermNode.cs" />
+    <Compile Include="Mapping\AbstractNode.cs" />
+    <Compile Include="Mapper\ActionResults\OK.cs" />
+    <Compile Include="Mapper\ActionResults\UserError.cs" />
+    <Compile Include="Mapping\Node.cs" />
+    <Compile Include="Mapping\RootNode.cs" />
+    <Compile Include="Mapping\ChildNodes.cs" />
+    <Compile Include="Mapping\ExposeAttribute.cs" />
+    <Compile Include="Mapper\Functions.cs" />
+    <Compile Include="Mapper\InjectAttribute.cs" />
+    <Compile Include="Mapper\MethodInfoNode.cs" />
+    <Compile Include="Mapping\IHasChildren.cs" />
+    <Compile Include="Mapping\IHasHyperlinks.cs" />
+    <Compile Include="Mapping\MethodInfoNodeFactory.cs" />
+    <Compile Include="Mapper\NodeRouting.cs" />
+    <Compile Include="Mapping\OptionsFromAttribute.cs" />
+    <Compile Include="Mapper\GlossaryNode.cs" />
+    <Compile Include="Mapper\UriHelper.cs" />
+    <Compile Include="RepresentationModel\FindUriForTerm.cs" />
+    <Compile Include="RepresentationModel\SemanticPropertiesSet.cs" />
+    <Compile Include="RepresentationModel\SemanticProperty.cs" />
+    <Compile Include="RequestHandling\BaseUrlRelativePath.cs" />
+    <Compile Include="RequestHandling\Router.cs" />
+    <Compile Include="Vocab\DisplayText.cs" />
+    <Compile Include="Vocab\FieldName.cs" />
+    <Compile Include="Vocab\Link.cs" />
+    <Compile Include="Vocab\TermFactory.cs" />
+    <Compile Include="Vocab\Terms.cs" />
+    <Compile Include="Vocab\Term.cs" />
     <Compile Include="ResourceModel\InvokeResult.cs" />
     <Compile Include="ResourceModel\Method.cs" />
     <Compile Include="ResourceModel\MethodHandler.cs" />
     <Compile Include="ResourceModel\ObjectResult.cs" />
-    <Compile Include="RepresentationModel\Representation.cs" />
     <Compile Include="Helpers\ForEachExtension.cs" />
     <Compile Include="UrlPart.cs" />
     <Compile Include="ResourceModel\MethodParameter.cs" />
     <Compile Include="ResourceModel\Resource.cs" />
-    <Compile Include="RepresentationModel\Vocab\Link.cs" />
-    <Compile Include="RepresentationModel\Property.cs" />
+    <Compile Include="RepresentationModel\SemanticDocument.cs" />
     <Compile Include="AppendExtension.cs" />
     <Compile Include="Representor.cs" />
     <Compile Include="ResourceModel\MethodArguments.cs" />
@@ -61,6 +89,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Helpers\RecurseExtension.cs" />
     <Compile Include="RequestHandling\Response.cs" />
+    <Compile Include="Vocab\Operation.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -74,9 +103,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="config.nsdepcop" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="NodeModel\" />
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

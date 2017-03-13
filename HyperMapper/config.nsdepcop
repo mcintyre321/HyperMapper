@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<NsDepCopConfig IsEnabled="true" CodeIssueKind="Error" ChildCanDependOnParentImplicitly="true" >
+    
+    <!-- Any namespace can reference the System namespace and its sub-namespaces. -->
+  <!-- Any namespace can reference the global namespace. --><!--
+    <Allowed From="*" To="." />
+
+    --><!-- Code generated from XAML files can reference any namespace. -->
+  <Allowed From="*" To="*" />
+  <Disallowed From="HyperMapper.ResourceModel.*" To="HyperMapper.RepresentationModel.*" />
+  <Disallowed From="HyperMapper.RepresentationModel.*" To="HyperMapper.ResourceModel.*" />
+  <!--<Disallowed From="HyperMapper.Mapping.*" To="HyperMapper.Mapper.*" />-->
+  
+
+</NsDepCopConfig>

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace HyperMapper.RepresentationModel
+namespace HyperMapper.Vocab
 {
     public static class TermFactory
     {
@@ -11,7 +11,10 @@ namespace HyperMapper.RepresentationModel
 
         public static Term From(MethodInfo methodInfo)
         {
-            return  new Term(methodInfo.DeclaringType.FullName + "_" + methodInfo.Name);
+            return  new Term(methodInfo.DeclaringType.FullName + "_" + methodInfo.Name)
+            {
+                Meanings = { TermFactory.From<Operation>()}
+            };
         }
 
         public static Term From<T>()

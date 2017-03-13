@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using HyperMapper.RepresentationModel;
+using HyperMapper.Vocab;
 
-namespace HyperMapper.Mapper
+namespace HyperMapper.Mapping
 {
     public abstract class AbstractNode
     {

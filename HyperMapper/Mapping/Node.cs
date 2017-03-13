@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HyperMapper.Helpers;
-using HyperMapper.RepresentationModel;
+using HyperMapper.Mapper;
+using HyperMapper.Vocab;
 
-namespace HyperMapper.Mapper
+namespace HyperMapper.Mapping
 {
     /// <summary>
     /// This is an implementation of INode which contains code for adding and removing
     /// well known _children, and automatically attaching to parent. Inherit from this if you are able to,
     /// </summary>
-    [HyperMapper(UseTypeNameAsClassNameForEntity = false)]
     public class Node : AbstractNode
     {
         public override Uri Uri => UriHelper.Combine(Parent.Uri, UrlPart.ToString());
@@ -28,8 +28,9 @@ namespace HyperMapper.Mapper
             Title = title;
             Term = term;
             var methodNodes = this.GetType().GetRuntimeMethods()
-                .Where(mi => mi.GetCustomAttribute<ExposeAttribute>() != null)
-                .Select(rm => new MethodInfoNode(this, rm));
+                .Select(mi => new {mi, att = mi.GetCustomAttribute<ExposeAttribute>()})
+                .Where(miat => miat.att != null)
+                .Select(rm => MethodInfoNodeFactory.Create(rm.att, rm.mi, this));
             foreach (var methodNode in methodNodes)
             {
                 this.AddChild(methodNode);
@@ -83,9 +84,11 @@ namespace HyperMapper.Mapper
             _children.Add(node.UrlPart.ToString(), node);
             return node;
         }
+
     }
 
-    [HyperMapper(UseTypeNameAsClassNameForEntity = false)]
+ 
+
     public class Node<TParent> : Node where TParent : Node
     {
         public new TParent Parent { get; }

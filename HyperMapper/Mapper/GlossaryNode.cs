@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using HyperMapper.RepresentationModel;
 using System.Linq;
+using HyperMapper.Mapping;
+using HyperMapper.ResourceModel;
+using HyperMapper.Vocab;
 
 namespace HyperMapper.Mapper
 {
@@ -45,49 +48,8 @@ namespace HyperMapper.Mapper
 
         public override UrlPart UrlPart => new UrlPart("_glossary");
 
-        public override AbstractNode GetChild(UrlPart key)
-        {
-            return terms.Where(k => k.Key.UrlPart == key).Select(pair => pair.Value).SingleOrDefault();
-        }
+        public override AbstractNode GetChild(UrlPart key) => terms.Where(k => k.Key.UrlPart == key).Select(pair => pair.Value).SingleOrDefault();
 
-        public override bool HasChild(UrlPart urlPart)
-        {
-            return ChildKeys.Any(ck => ck == urlPart);
-        }
-    }
-     
-
-    internal class TermNode : AbstractNode
-    {
-        private GlossaryNode glossaryNode;
-        private Term term;
-
-        public TermNode(GlossaryNode glossaryNode, Term term)
-        {
-            this.glossaryNode = glossaryNode;
-            this.term = term;
-        }
-
-        public override IEnumerable<UrlPart> ChildKeys => Enumerable.Empty<UrlPart>();
-
-        public override AbstractNode Parent => glossaryNode;
-
-        public override Term Term => TermFactory.From<TermNode>();
-
-        public override string Title => term.Title;
-
-        public override Uri Uri => UriHelper.Combine(glossaryNode.Uri, UrlPart.ToString());
-
-        public override UrlPart UrlPart => term.UrlPart;
-
-        public override AbstractNode GetChild(UrlPart key)
-        {
-            return null;
-        }
-
-        public override bool HasChild(UrlPart urlPart)
-        {
-            return false;
-        }
+        public override bool HasChild(UrlPart urlPart) => ChildKeys.Any(ck => ck == urlPart);
     }
 }
