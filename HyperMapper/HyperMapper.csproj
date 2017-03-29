@@ -37,6 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
+    <Compile Include="Helpers\ThenExtension.cs" />
     <Compile Include="Mapper\DefaultServiceLocatorDelegate.cs" />
     <Compile Include="Mapper\ServiceLocatorDelegate.cs" />
     <Compile Include="Mapper\TermNode.cs" />
@@ -62,7 +63,7 @@
     <Compile Include="RepresentationModel\SemanticProperty.cs" />
     <Compile Include="RequestHandling\BaseUrlRelativePath.cs" />
     <Compile Include="RequestHandling\Router.cs" />
-    <Compile Include="Vocab\DisplayName.cs" />
+    <Compile Include="Vocab\DisplayText.cs" />
     <Compile Include="Vocab\FieldKind.cs" />
     <Compile Include="Vocab\FieldName.cs" />
     <Compile Include="Vocab\Link.cs" />
@@ -110,13 +111,6 @@
     <Folder Include="NodeModel\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
-  <Import Project="..\packages\NsDepCop.1.6.0-beta3\build\NsDepCop.targets" Condition="Exists('..\packages\NsDepCop.1.6.0-beta3\build\NsDepCop.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\NsDepCop.1.6.0-beta3\build\NsDepCop.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\NsDepCop.1.6.0-beta3\build\NsDepCop.targets'))" />
-  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

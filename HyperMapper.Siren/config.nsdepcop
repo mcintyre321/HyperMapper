@@ -7,9 +7,6 @@
 
     --><!-- Code generated from XAML files can reference any namespace. -->
   <Allowed From="*" To="*" />
-  <Disallowed From="HyperMapper.ResourceModel.*" To="HyperMapper.RepresentationModel.*" />
-  <Disallowed From="HyperMapper.RepresentationModel.*" To="HyperMapper.ResourceModel.*" />
-  <!--<Disallowed From="HyperMapper.Mapping.*" To="HyperMapper.Mapper.*" />-->
-  
+  <Disallowed From="HyperMapper.Siren.*" To="HyperMapper.ResourceModel.*" />
 
 </NsDepCopConfig>

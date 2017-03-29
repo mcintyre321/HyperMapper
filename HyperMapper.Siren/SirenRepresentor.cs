@@ -82,7 +82,7 @@ namespace HyperMapper.Siren
             {
                 property.Value.Switch(set =>
                 {
-                    if (property.Term == TermFactory.From<Operation>())
+                    if (property.Term.Means(TermFactory.From<Operation>()))
                     {
                         Func<SemanticProperty, Field> buildField = mp =>
                         {
@@ -106,26 +106,16 @@ namespace HyperMapper.Siren
                             return field;
                         };
                         ;
-                        var href = new Uri(set[TermFactory.From<Operation.ActionUrl>()].Value.AsT1.Value<string>());
+                        var href = new Uri(set[TermFactory.From<Operation.ActionUrl>()].Value.AsT1.Value<string>(), UriKind.Relative);
                         var action = new SirenDotNet.Action(uriTermFinder(property.Term).ToString(), href)
                         {
                             Method = HttpVerbs.POST,
-                            Title = set[TermFactory.From<DisplayName>()].Value.AsT1.Value<string>(),
+                            Title = set[TermFactory.From<DisplayText>()].Value.AsT1.Value<string>(),
                             //TODO Fields = property.Parameters.Select(buildField),
                         };
                         actions.Add(action);
                     }
-                    if (property.Term.Means(TermFactory.From<Vocab.Link>()))
-                    {
-                        var href = set[TermFactory.From<Vocab.Link.Href>()].Value.AsT1.Value<string>();
-                        var displayName = set[TermFactory.From<DisplayName>()].Value.AsT1.Value<string>();
-                        var rel = set[TermFactory.From<Vocab.Link.Rel>()].Value.AsT2;
-                        var action = new SirenDotNet.Link(uriTermFinder(rel), href)
-                        {
-                            Title = displayName
-                        };
-                        links.Add(action);
-                    }
+                   
 
                 },
                 value =>
@@ -143,7 +133,21 @@ namespace HyperMapper.Siren
                 term => { },
                 list =>
                 {
-
+                    if (property.Term == TermFactory.From<Vocab.Links>())
+                    {
+                        foreach (var value in list)
+                        {
+                            var set = value.AsT0;
+                            var displayName = set[TermFactory.From<DisplayText>()].Value.AsT1.Value<string>();
+                            Term rel = set[TermFactory.From<Vocab.Links.Rel>()].Value.AsT2;
+                            var href = new Uri(set[TermFactory.From<Vocab.Links.Href>()].Value.AsT1.Value<string>(), UriKind.Relative);
+                            var action = new SirenDotNet.Link(href, uriTermFinder(rel).ToString())
+                            {
+                                Title = displayName
+                            };
+                            links.Add(action);
+                        }
+                    }
                 });
             }
 

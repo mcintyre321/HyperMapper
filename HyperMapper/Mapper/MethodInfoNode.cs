@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 
 namespace HyperMapper.Mapper
 {
-    internal class MethodInfoNode : AbstractNode
+    public class MethodInfoNode : AbstractNode
     {
         public MethodInfoNode(AbstractNode parent, MethodInfo mi)
         {

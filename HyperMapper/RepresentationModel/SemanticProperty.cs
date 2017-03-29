@@ -18,5 +18,10 @@ namespace HyperMapper.RepresentationModel
 
         public OneOf<SemanticPropertiesSet, JToken, Term, SemanticPropertiesList> Value { get; }
 
+        public static SemanticProperty Create<T>(OneOf<SemanticPropertiesSet, JToken, Term, SemanticPropertiesList> value)
+        {
+            return new SemanticProperty(TermFactory.From<T>(), value);
+
+        }
     }
 }
