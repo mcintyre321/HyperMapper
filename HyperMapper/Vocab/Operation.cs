@@ -42,7 +42,7 @@ namespace HyperMapper.Vocab
                     }
                 );
                 fieldProperties.Add(SemanticProperty.CreateValue<FieldName>((JToken)methodParameter.UrlPart.ToString()));
-                var field = SemanticProperty.CreateSet<Field>(fieldProperties);
+                var field = SemanticProperty.CreateSet(methodParameter.Term, fieldProperties);
                 fields.Add(field);
             }
             operationSemProp.Value.Add(SemanticProperty.CreateSet(TermFactory.From<Fields>(), fields));
@@ -59,7 +59,6 @@ namespace HyperMapper.Vocab
 
 
         public class ActionUrl { }
-        public class Field { }
         public class FieldValue { }
 
         public class Options { }

@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Siren", "HyperM
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.Examples.Web", "HyperMapper.Examples.Web\HyperMapper.Examples.Web.csproj", "{D4501B25-2E89-4C78-9D83-639D56CE6D2D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HyperMapper.SirenServerSideRepresentor", "HyperMapper.SirenServerSideRepresentor\HyperMapper.SirenServerSideRepresentor.csproj", "{2ADA7767-CEF2-4F52-B19F-BDC784A1D91D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,6 +43,10 @@ Global
 		{D4501B25-2E89-4C78-9D83-639D56CE6D2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4501B25-2E89-4C78-9D83-639D56CE6D2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4501B25-2E89-4C78-9D83-639D56CE6D2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ADA7767-CEF2-4F52-B19F-BDC784A1D91D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ADA7767-CEF2-4F52-B19F-BDC784A1D91D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ADA7767-CEF2-4F52-B19F-BDC784A1D91D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ADA7767-CEF2-4F52-B19F-BDC784A1D91D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

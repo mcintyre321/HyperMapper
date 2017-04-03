@@ -17,7 +17,6 @@ namespace HyperMapper.Mapper
             this.term = term;
         }
 
-        public override IEnumerable<UrlPart> ChildKeys => Enumerable.Empty<UrlPart>();
 
         public override AbstractNode Parent => glossaryNode;
 
@@ -29,15 +28,6 @@ namespace HyperMapper.Mapper
 
         public override UrlPart UrlPart => term.UrlPart;
 
-        public override AbstractNode GetChild(UrlPart key)
-        {
-            return null;
-        }
-
-        public override bool HasChild(UrlPart urlPart)
-        {
-            return false;
-        }
 
     }
 }

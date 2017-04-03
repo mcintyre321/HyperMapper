@@ -4,6 +4,7 @@ using System.Linq;
 using ChessDotNet;
 using HyperMapper.Mapper;
 using HyperMapper.Mapping;
+using HyperMapper.Mapping.ResultTypes;
 using HyperMapper.Vocab;
 
 namespace HyperMapper.Examples.Web.Apps
@@ -16,24 +17,13 @@ namespace HyperMapper.Examples.Web.Apps
         }
 
         [Expose]
-        public ChessGameNode CreateGame()
+        public Created CreateGame()
         {
             var key = Guid.NewGuid().ToString();
             var chessGame = new ChessGame();
             _games.Add(key, chessGame);
-            return new ChessGameNode(chessGame, this, new UrlPart(key));
+            return new Created(new ChessGameNode(chessGame, this, new UrlPart(key)));
         }
-
-        public override AbstractNode GetChild(UrlPart key)
-        {
-            if (_games.ContainsKey(key.ToString()))
-            {
-                return new ChessGameNode(_games[key.ToString()], this, key);
-            }
-            return base.GetChild(key);
-        }
-
-        public override IEnumerable<UrlPart> ChildKeys => base.ChildKeys.Concat(_games.Keys.Select(k => new UrlPart(k)));
     }
 
     public class ChessGameNode : Node<ChessEngineApp>
@@ -46,7 +36,21 @@ namespace HyperMapper.Examples.Web.Apps
         }
 
         [Expose]
-        public void MakeMove([OptionsFrom(nameof(MakeMove_options))]MoveInfo moveInfo)
+        public BoardVm Board
+        {
+            get
+            {
+                var squares = this._chessGame.GetBoard()
+                    .SelectMany(p => p)
+                    .Select(p => new BoardVm.SquareView(p?.GetFenCharacter(), p?.Owner.ToString()))
+                    .ToArray();
+                return new BoardVm(squares, 8, 8);
+            }
+        }
+
+
+        [Expose]
+        public Modified MakeMove([OptionsFrom(nameof(MakeMove_options))]MoveInfo moveInfo)
         {
             var move = _chessGame.GetValidMoves(_chessGame.WhoseTurn).Single(m =>
                 (int) m.OriginalPosition.Rank == moveInfo.OrigX &&
@@ -57,6 +61,7 @@ namespace HyperMapper.Examples.Web.Apps
                 m.Player.ToString() == moveInfo.Player
                 );
             _chessGame.ApplyMove(move, false);
+            return new Modified(this);
         }
 
         public IEnumerable<MoveInfo> MakeMove_options()
@@ -64,6 +69,32 @@ namespace HyperMapper.Examples.Web.Apps
             return _chessGame
                 .GetValidMoves(_chessGame.WhoseTurn)
                 .Select(m => new MoveInfo(m.Player.ToString(), m.OriginalPosition.Rank, (int) m.OriginalPosition.File, m.NewPosition.Rank, (int) m.NewPosition.File, m.Promotion));
+        }
+    }
+
+    public class BoardVm
+    {
+        public IReadOnlyCollection<SquareView> Squares { get; }
+        public int Rows { get; }
+        public int Cols { get; }
+
+        public BoardVm(SquareView[] squares, int rows, int cols)
+        {
+            Squares = squares;
+            Rows = rows;
+            Cols = cols;
+        }
+
+        public class SquareView
+        {
+            public char? Char { get; }
+            public string Color { get; }
+
+            public SquareView(char? @char, string color)
+            {
+                Char = @char;
+                Color = color;
+            }
         }
     }
 

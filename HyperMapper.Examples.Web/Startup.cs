@@ -8,6 +8,7 @@ using HyperMapper.Mapper;
 using HyperMapper.Owin;
 using HyperMapper.RepresentationModel;
 using HyperMapper.Siren;
+using HyperMapper.SirenServerSideRepresentor;
 using HyperMapper.Vocab;
 using Microsoft.Owin;
 using Owin;
@@ -20,7 +21,12 @@ namespace HyperMapper.Examples.Web
     {
         public void Configuration(IAppBuilder app)
         {
-            var representors = new Representor<SemanticDocument>[] { new Siren.SirenRepresentor(), new SirenHtmlRepresentor() };
+            var representors = new Representor<SemanticDocument>[]
+            {
+                new Siren.SirenRepresentor(),
+                new SirenServerSideHtmlRepresentor(), 
+                //new SirenReactHtmlRepresentor()
+            };
 
             var taskListAppRoot = BuildTaskListAppRoot(new Uri("/tasks", UriKind.Relative));
             app.ExposeRootNodeAsHypermediaApi(taskListAppRoot, LocateAdaptors, representors);

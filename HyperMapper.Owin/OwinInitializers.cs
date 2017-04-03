@@ -45,11 +45,6 @@ namespace HyperMapper.Owin
                 },
                 async createdResponse =>
                 {
-                    HashSet<SemanticDocument> properties = new HashSet<SemanticDocument>()
-                    {
-                        //new ValueProperty("Message", JToken.FromObject("CREATED"), new Term {new Term("ResultMessage"), }), 
-                    };
-                    //TODO var new Representation(ctx.Request.Uri, properties)
                     await ResponseWriter.Write(ctx, createdResponse.Representation, termUriFinder, representors);
                     return true;
                 });

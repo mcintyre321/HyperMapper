@@ -24,7 +24,7 @@ namespace HyperMapper.Owin
             var representor = settings.FirstOrDefault(r => r.AcceptTypes.Intersect(ctx.Request.Accept.Split(',')).Select(h => h.Trim()).Any());
             if (representor != null)
             {
-                var response = representor.GetResponse(representation, termUriFinder);
+                var response = await representor.GetResponse(representation, termUriFinder);
                 await writeStringToResponse(response.Item1, response.Item2);
             }
             else

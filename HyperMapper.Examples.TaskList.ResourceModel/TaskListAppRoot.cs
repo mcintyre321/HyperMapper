@@ -10,16 +10,16 @@ namespace HyperMapper.Examples.TaskList.Domain
 {
     public class TaskListAppRoot : RootNode
     {
-        [Expose]
         public Authentication Authentication { get; }
 
-        [Expose]
         public Boards Boards { get; }
 
         public TaskListAppRoot(Uri uri) :base("Task Lists App", uri, TermFactory.From<TaskListAppRoot>())
         {
-            this.Authentication = AddChild(new Authentication(this, nameof(Authentication)));
-            this.Boards = AddChild(new Boards(this, nameof(Boards)));
+            this.Authentication = (new Authentication(this, nameof(Authentication)));
+            this.Boards = (new Boards(this, nameof(Boards)));
         }
+
+        public override ChildNodes ChildNodes => base.ChildNodes.Append(this.Authentication, this.Boards);
     }
 }
