@@ -23,11 +23,7 @@ namespace HyperMapper.Mapper
 
         public override AbstractNode Parent { get; }
         public override UrlPart UrlPart { get; }
-        public override IEnumerable<UrlPart> ChildKeys { get; } = new UrlPart[0];
         public override string Title { get; }
-        public override bool HasChild(UrlPart urlPart) => false;
-
-        public override AbstractNode GetChild(UrlPart key) => null;
 
         public override Uri Uri => UriHelper.Combine(Parent.Uri, UrlPart.ToString());
         public override Term Term => TermFactory.From(MethodInfo);
@@ -38,7 +34,7 @@ namespace HyperMapper.Mapper
         {
             var parameterInfo = this.MethodInfo.GetParameters()
                 .Where(mi => mi.GetCustomAttribute<InjectAttribute>() == null)
-                .Select(pi => new MethodParameter(pi.Name, GetMethodParameterType(pi))).ToArray();
+                .Select(pi => new MethodParameter(pi.Name, GetMethodParameterType(pi), TermFactory.From(pi))).ToArray();
 
             return parameterInfo.ToArray();
 

@@ -1,5 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using HyperMapper.ResourceModel;
+using OneOf;
+using OneOf.Types;
 
 namespace HyperMapper.RequestHandling
 {
@@ -15,7 +18,8 @@ namespace HyperMapper.RequestHandling
                 var path = new BaseUrlRelativePath(requestUri.ToString().Substring(baseUri.ToString().Length));
                 var target = router(path);
 
-                return await target.Match(
+                OneOf<Resource<TRep>, None> oneOf = (await target);
+                return await oneOf.Match(
                     resource => resource.GetMethodHandler(request.Method)
                         .Match(
                             async handler =>
@@ -26,7 +30,7 @@ namespace HyperMapper.RequestHandling
                                     async boundModel => (await handler.Invoke(boundModel)).Match(
                                         representation =>
                                             (Response<TRep>) new Response<TRep>.RepresentationResponse(representation.Representation)
-                                        ));
+                                    ));
                                 return response;
                             },
                             none => Task.FromResult((Response<TRep>) new Response<TRep>.MethodNotAllowed())),

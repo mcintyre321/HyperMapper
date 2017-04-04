@@ -17,21 +17,6 @@ using Action = SirenDotNet.Action;
 
 namespace HyperMapper.Siren
 {
-    public class SirenHtmlRepresentor : Representor<SemanticDocument>
-    {
-        public override Tuple<string, string> GetResponse(SemanticDocument hypermediaObject, FindUriForTerm termUriFinder)
-        {
-
-            var sirenRep = new SirenRepresentor();
-            var response = sirenRep.GetResponse(hypermediaObject, termUriFinder);
-            var index = new HyperMapper.Siren.Index() { Model = JToken.Parse(response.Item2) };
-            var transformText = index.TransformText();
-            return Tuple.Create("text/html", transformText);
-        }
-
-        public override IEnumerable<string> AcceptTypes { get; } = new[] { "text/html" };
-    }
-
     public class SirenRepresentor : Representor<SemanticDocument>
     {
 
@@ -55,7 +40,7 @@ namespace HyperMapper.Siren
 
         
 
-        public override Tuple<string, string> GetResponse(SemanticDocument hypermediaObject, FindUriForTerm termUriFinder)
+        public override Task<Tuple<string, string>> GetResponse(SemanticDocument hypermediaObject, FindUriForTerm termUriFinder)
         {
             var responseEntity = this.BuildFromSemanticDocument(hypermediaObject, termUriFinder);
             var serializerSettings = this.JsonSerializerSettings;
@@ -63,7 +48,7 @@ namespace HyperMapper.Siren
             var serializer = JsonSerializer.Create(serializerSettings);
             var objectAsJson = JToken.FromObject(responseEntity, serializer);
 
-            return Tuple.Create("application/vnd.siren+json", objectAsJson.ToString(Formatting.Indented));
+            return Task.FromResult(Tuple.Create("application/vnd.siren+json", objectAsJson.ToString(Formatting.Indented)));
         }
 
         public override IEnumerable<string> AcceptTypes { get; } = new[] {"application/vnd.siren+json"};
@@ -112,7 +97,8 @@ namespace HyperMapper.Siren
                                         {
                                             name = o[TermFactory.From<DisplayText>()].Value.AsT1.Value<string>(),
                                             value = o[TermFactory.From<Operation.FieldValue>()].Value.AsT1.Value<string>()
-                                        }).ToArray();
+                                        })
+                                        .Select(JObject.FromObject).ToArray();
                             }
 
 
@@ -125,7 +111,6 @@ namespace HyperMapper.Siren
                             Method = HttpVerbs.POST,
                             Title = set[TermFactory.From<DisplayText>()].Value.AsT1.Value<string>(),
                             Fields = set[TermFactory.From<Operation.Fields>()].Value.AsT0.Select(x => buildField(x)).ToArray()
-                            //TODO Fields = property.Parameters.Select(buildField),
                         };
                         actions.Add(action);
                     }
@@ -141,7 +126,7 @@ namespace HyperMapper.Siren
                     }
                     else
                     {
-                        jo[uriTermFinder(property.Term)] = value;
+                        jo[uriTermFinder(property.Term).ToString()] = value.ToString();
                     }
                 },
                 term => { },

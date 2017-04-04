@@ -21,7 +21,6 @@ namespace HyperMapper.Examples.Web.Apps
 
         public IEnumerable<Tuple<Term, Uri, string>> Hyperlinks => _hyperlinks;
 
-        public Uri Uri { get; }
 
 
         public sealed class App { private App() { } }

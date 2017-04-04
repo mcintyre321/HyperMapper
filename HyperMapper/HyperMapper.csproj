@@ -39,19 +39,26 @@
     <Compile Include="AsReadonlyDictionaryExtension.cs" />
     <Compile Include="Helpers\ThenExtension.cs" />
     <Compile Include="Mapper\DefaultServiceLocatorDelegate.cs" />
+    <Compile Include="Mapper\Rules\MarkingAMethodWithExposeAttributeWillAddTheMethodAsAnActionResource.cs" />
+    <Compile Include="Mapper\Rules\ImplementingIHasChildNodesWillExposeTheItemsAsNodeResources.cs" />
+    <Compile Include="Mapper\Rules\ImplementingIHasHyperlinksWillAddALinkPropertyToDocument.cs" />
+    <Compile Include="Mapper\Rules\MarkingAPropertyWithExposeAttributeWillAddAValuePropertyToDocument.cs" />
+    <Compile Include="Mapper\SemanticDocumentHelpers.cs" />
     <Compile Include="Mapper\ServiceLocatorDelegate.cs" />
     <Compile Include="Mapper\TermNode.cs" />
+    <Compile Include="Mapper\Rules\ThereWillBeALinkToTheParentNodeInTheDocument.cs" />
+    <Compile Include="Mapper\Rules\TheNodeTitleWillBeAddedAsAProperty.cs" />
     <Compile Include="Mapping\AbstractNode.cs" />
     <Compile Include="Mapper\ActionResults\OK.cs" />
     <Compile Include="Mapper\ActionResults\UserError.cs" />
     <Compile Include="Mapping\Node.cs" />
+    <Compile Include="Mapping\ResultTypes\Created.cs" />
     <Compile Include="Mapping\RootNode.cs" />
-    <Compile Include="Mapping\ChildNodes.cs" />
     <Compile Include="Mapping\ExposeAttribute.cs" />
     <Compile Include="Mapper\Functions.cs" />
     <Compile Include="Mapper\InjectAttribute.cs" />
     <Compile Include="Mapper\MethodInfoNode.cs" />
-    <Compile Include="Mapping\IHasChildren.cs" />
+    <Compile Include="Mapping\IHasChildNodes.cs" />
     <Compile Include="Mapping\IHasHyperlinks.cs" />
     <Compile Include="Mapping\MethodInfoNodeFactory.cs" />
     <Compile Include="Mapper\NodeRouting.cs" />
@@ -92,22 +99,22 @@
     <Compile Include="Vocab\Operation.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="OneOf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\OneOf.2.0.23\lib\portable45-net45+win8+wp8+wpa81\OneOf.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="config.nsdepcop" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="NodeModel\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\portable-net45+win8+wpa81+wp8\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="OneOf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OneOf.2.1.77\lib\portable45-net45+win8+wp8+wpa81\OneOf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

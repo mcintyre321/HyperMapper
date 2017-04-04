@@ -13,8 +13,11 @@ namespace HyperMapper.Examples.TaskList.Domain
     {
         public Board(Boards parent, string key, string title) : base(parent, key, title, TermFactory.From<Board>()) { }
 
-        List<Card> _cards = new List<Card>();
+        readonly List<Card> _cards = new List<Card>();
+
         public IEnumerable<Card> Cards => _cards;
+
+        public override ChildNodes ChildNodes => base.ChildNodes.Concat(_cards);
 
         [Expose]
         public string Description { get; set; }
@@ -25,8 +28,6 @@ namespace HyperMapper.Examples.TaskList.Domain
         {
             var item = new Card(this, guid(), title) { Description = description };
             this._cards.Add(item);
-            this.AddChild(item);
-
         }
 
         [Expose]

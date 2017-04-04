@@ -18,13 +18,7 @@ namespace HyperMapper.Mapper
             this.terms.Add(TermFactory.From<GlossaryNode>(), new TermNode(this, TermFactory.From<GlossaryNode>()));
         }
 
-        public override IEnumerable<UrlPart> ChildKeys
-        {
-            get
-            {
-                return terms.Select(t => new UrlPart(t.Key.UrlPart));
-            }
-        }
+     
 
         public override AbstractNode Parent => parent;
 
@@ -48,8 +42,5 @@ namespace HyperMapper.Mapper
 
         public override UrlPart UrlPart => new UrlPart("_glossary");
 
-        public override AbstractNode GetChild(UrlPart key) => terms.Where(k => k.Key.UrlPart == key).Select(pair => pair.Value).SingleOrDefault();
-
-        public override bool HasChild(UrlPart urlPart) => ChildKeys.Any(ck => ck == urlPart);
     }
 }

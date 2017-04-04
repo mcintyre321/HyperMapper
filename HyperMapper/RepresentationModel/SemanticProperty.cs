@@ -46,6 +46,6 @@ namespace HyperMapper.RepresentationModel
         internal SemanticProperty(Term term, Term value) : base(term, value) { }
         internal SemanticProperty(Term term, SemanticPropertiesList value) : base(term, value)  { }
 
-        public TValue Value => (TValue) ((IOneOf) base.Value).Value;
+        public new TValue Value => (TValue) ((IOneOf) base.Value).Value;
     }
 }

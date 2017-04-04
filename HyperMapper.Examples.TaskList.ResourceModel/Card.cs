@@ -16,6 +16,8 @@ namespace HyperMapper.Examples.TaskList.Domain
         public string Description { get; set; }
         public Card(Board parent, UrlPart urlPart, string title) : base(parent, urlPart, title, TermFactory.From<Card>()) { }
 
+        public override ChildNodes ChildNodes => base.ChildNodes.Concat(_tasks);
+
         [Expose]
         public void AddTask(string title, string description, [Inject] IdGenerator idGenerator)
         {

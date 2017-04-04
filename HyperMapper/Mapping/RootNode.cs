@@ -13,7 +13,6 @@ namespace HyperMapper.Mapping
         {
             _uri = uri;
             GlossaryNode = new GlossaryNode(this);
-            this.AddChild(GlossaryNode);
         }
 
         public GlossaryNode GlossaryNode { get; }

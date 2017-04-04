@@ -22,5 +22,9 @@ namespace HyperMapper.Vocab
             return new Term(typeof(T).FullName);
         }
 
+        public static Term From(ParameterInfo pi)
+        {
+            return new Term(pi.Member.Name + "_" + pi.Name);
+        }
     }
 }
